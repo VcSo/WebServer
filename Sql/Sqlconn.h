@@ -16,9 +16,9 @@ public:
 private:
     std::queue<MYSQL *> m_connQue;
 
-    int MAX_CONN_;
-    int useCount_;
-    int freeCount_;
+    int MAX_CONN;
+    int useCount;
+    int freeCount;
 };
 
 

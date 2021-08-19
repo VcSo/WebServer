@@ -1,8 +1,8 @@
 #include "Sqlconn.h"
 
 SqlConnPool::SqlConnPool() {
-    useCount_ = 0;
-    freeCount_ = 0;
+    useCount = 0;
+    freeCount = 0;
 }
 
 SqlConnPool* SqlConnPool::Instance() {
@@ -33,4 +33,7 @@ void SqlConnPool::init(const char *host, int port, std::string username, std::st
         }
         m_connQue.push(sql);
     }
+    MAX_CONN = sqlconn_num;
+
+    sem_init(&semId_, 0, MAX_CONN_);
 }
