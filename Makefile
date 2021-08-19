@@ -3,7 +3,7 @@ CXX = g++
 LIB = -lpthread -lmysqlclient
 FLAGS = -std=c++14 -Wall -g
 
-OBJS = main.cpp ./Server/*.cpp ./ThreadPool/ThreadPool.hpp ./Timer/*.cpp ./Http/*.cpp
+OBJS = main.cpp ./Server/*.cpp ./ThreadPool/ThreadPool.hpp ./Timer/*.cpp ./Http/*.cpp ./Sql/*.cpp
 
 all: $(OBJS)
 	$(CXX) $(FLAGS) $(OBJS) -o $(APP) $(LIB)
