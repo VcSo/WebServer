@@ -1,17 +1,26 @@
 //
-// Created by Vcvc on 2021/8/17.
+// Created by Vcvc on 2021/8/20.
 //
 
 #include <iostream>
+
 #include "./Server/Server.h"
 
 int main(int argc, char **argv)
 {
-    WebServer server(
-            1316, 3, 60000, false,             /* 端口 ET模式 timeoutMs 优雅退出  */
-            3306, "root", "root", "webserver", /* Mysql配置 */
-            12, 6, true, 1, 1024);             /* 连接池数量 线程池数量 日志开关 日志等级 日志异步队列容量 */
+    std::cout << "main start" << std::endl;
+    int port = 20999;
+    if(argc > 2)
+    {
+        port = atoi(argv[1]);
+    }
 
+    Server server(port, "localhost", "root", "vcvc", "server",
+                    true, 1, 1, 8, 10, 1, 1); //启用 友善关闭 lt/et sql thread actor 异步
+
+    server.setsql();
+    server.setlog("./logs");
 
     return 0;
 }
+
