@@ -1,11 +1,11 @@
-APP = WebServer
+APP = serverone
 CXX = g++
 LIB = -lpthread -lmysqlclient
-FLAGS = -std=c++14 -Wall -g
+FLAGS = -std=c++11 -W -Wall -O0 -g
 
-OBJS = main.cpp ./Server/*.cpp ./ThreadPool/ThreadPool.hpp ./Timer/*.cpp ./Http/*.cpp ./Sql/*.cpp
+OBJS = main.cpp ./Server/*.cpp ./Log/*.cpp ./Sql/*.cpp
 
-all: $(OBJS)
+main: $(OBJS)
 	$(CXX) $(FLAGS) $(OBJS) -o $(APP) $(LIB)
 
 .PHONY: clean
