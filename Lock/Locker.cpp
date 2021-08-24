@@ -57,7 +57,7 @@ bool Cond::wait(pthread_mutex_t *m_mutex)
 bool Cond::timewait(pthread_mutex_t *mutex, struct timespec t)
 {
     int ret = 0;
-    ret = pthread_cond_timedwait(&m_cond, m_mutex, &t);
+    ret = pthread_cond_timedwait(&m_cond, mutex, &t);
 
     return ret == 0;
 }
@@ -84,8 +84,10 @@ Locker::~Locker()
 
 bool Locker::lock()
 {
-
+    return pthread_mutex_lock(&m_mutex) == 0;
 }
 
 bool Locker::unlock()
-{}
+{
+    return pthread_mutex_unlock(&m_mutex) == 0;
+}

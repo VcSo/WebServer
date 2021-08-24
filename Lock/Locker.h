@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 #include <mutex>
-#include <semaphore>
+#include <semaphore.h>
 
 class Sem
 {
@@ -25,6 +25,10 @@ public:
     Locker();
     ~Locker();
 
+    pthread_mutex_t *get()
+    {
+        return &m_mutex;
+    }
     bool lock();
     bool unlock();
 
