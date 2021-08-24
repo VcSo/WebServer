@@ -5,6 +5,10 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <queue>
+
+#include "../Lock/Locker.h"
+#include "./Block_queue.hpp"
 
 class Log {
 public:
@@ -23,8 +27,10 @@ private:
     std::ofstream writelog;
 
     bool m_is_async;
+    long long m_count;  //日志行数记录
 
-    std::queue<std::string> m_log_que;
+    block_queue<std::string> *m_log_que;
+    Locker m_mutex;
 };
 
 
