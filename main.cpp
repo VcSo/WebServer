@@ -19,7 +19,7 @@ int main(int argc, char **argv)
                     true, 1, 1, 8, 10, 1, 1); //启用 友善关闭 lt/et sql thread actor 异步
 
     server.setsql();
-    server.setlog("./logs");
+    server.setlog("./savelog/");
 
     return 0;
 }
