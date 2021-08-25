@@ -18,8 +18,9 @@ int main(int argc, char **argv)
     Server server(port, "localhost", "root", "vcvc", "server",
                     true, 1, 1, 8, 10, 1, 1); //启用 友善关闭 lt/et sql thread actor 异步
 
-    server.setsql();
+    //server.setsql();
     server.setlog("./savelog/");
+    server.threadpool();
 
     return 0;
 }
