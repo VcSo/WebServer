@@ -29,4 +29,10 @@ void Server::setlog(std::string path)
             Log::get_instance()->init(m_log_path, m_uselog, 2000, 800000, 0);
         }
     }
+
+}
+
+void Server::threadpool()
+{
+
 }

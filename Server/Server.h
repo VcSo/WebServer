@@ -2,6 +2,8 @@
 #define WEBSERVER_SERVER_H
 
 #include <string>
+
+#include "../Log/Log.h"
 #include "../Sql/connSql.h"
 
 class Server {
@@ -13,7 +15,7 @@ public:
     void setsql();
     void setlog(std::string path);
     //void Start();
-
+    void threadpool();
 
 private:
     int m_port;
