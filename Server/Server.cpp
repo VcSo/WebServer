@@ -3,7 +3,7 @@
 Server::Server(int port, std::string host, std::string username, std::string password, std::string database,
                 bool uselog, int linger, int mode, int sqlnum, int threadnum, int actor, int logmode)
                 : m_port(port), m_host(host), m_username(username), m_password(password), m_database(database),
-                    m_uselog(uselog), m_linger(linger), et(mode), m_sql_num(sqlnum), m_thead_num(threadnum), m_actor(actor), m_log_mode(logmode)
+                    m_uselog(uselog), m_linger(linger), et(mode), m_sql_num(sqlnum), m_thread_num(threadnum), m_actor(actor), m_log_mode(logmode)
 {
 
 }
@@ -34,5 +34,5 @@ void Server::setlog(std::string path)
 
 void Server::threadpool()
 {
-
+    m_pool = new ThreadPool<Http>(m_actor, m_consql, m_thread_num);
 }

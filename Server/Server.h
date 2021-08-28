@@ -5,6 +5,8 @@
 
 #include "../Log/Log.h"
 #include "../Sql/connSql.h"
+#include "../Pool/ThreadPool.hpp"
+#include "../Http/Httpconn.h"
 
 class Server {
 public:
@@ -22,7 +24,7 @@ private:
     int m_linger;
     int et;
     int m_sql_num;
-    int m_thead_num;
+    int m_thread_num;
     int m_actor;
     int m_log_mode;
 
@@ -32,8 +34,10 @@ private:
     std::string m_database;
     std::string m_log_path;
 
-    connSql *m_consql;
     bool m_uselog;
+
+    connSql *m_consql;
+    ThreadPool<Http> *m_pool;
 };
 
 #endif //WEBSERVER_SERVER_H
