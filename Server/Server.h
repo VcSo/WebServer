@@ -16,8 +16,9 @@ public:
 
     void setsql();
     void setlog(std::string path);
-    //void Start();
+    void Start();
     void threadpool();
+    void trig_mode();
 
 private:
     int m_port;
@@ -27,6 +28,8 @@ private:
     int m_thread_num;
     int m_actor;
     int m_log_mode;
+    int m_listen_mode;
+    int m_conn_mode;
 
     std::string m_host;
     std::string m_username;

@@ -36,3 +36,32 @@ void Server::threadpool()
 {
     m_pool = new ThreadPool<Http>(m_actor, m_consql, m_thread_num);
 }
+
+void Server::trig_mode()
+{
+    switch(et)
+    {
+        case 0:
+            m_listen_mode = 0;
+            m_conn_mode = 0;
+            break;
+        case 1:
+            m_listen_mode = 0;
+            m_conn_mode = 1;
+            break;
+        case 2:
+            m_listen_mode = 1;
+            m_conn_mode = 0;
+            break;
+        case 3:
+            m_listen_mode = 1;
+            m_conn_mode = 1;
+            break;
+        default:
+            m_listen_mode = 1;
+            m_conn_mode = 1;
+            break;
+    }
+
+    
+}
