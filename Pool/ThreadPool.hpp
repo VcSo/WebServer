@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <pthread.h>
+#include <list>
 
 #include "../Log/Log.h"
 #include "../Lock/Locker.h"
@@ -24,6 +25,11 @@ private:
 
     int m_actor;
     int m_thread_num;
+
+    std::list<T> m_queue;
+
+    Sem m_queue_stat;
+    Locker m_mutex;
 };
 
 template <typename T>
@@ -68,7 +74,36 @@ void* ThreadPool<T>::worker(void *arg)
 template <typename T>
 void ThreadPool<T>::run()
 {
+    while(true)
+    {
 
+        m_queue_stat.wait();
+        m_mutex.lock();
+
+        if(m_queue.empty())
+        {
+            m_mutex.unlock();
+            continue;
+        }
+
+        T *request = m_queue.front();
+        m_queue.pop_front();
+        m_mutex.unlock();
+
+        if(!request)
+        {
+            continue;
+        }
+
+        if(m_actor == 1)
+        {
+            if(request->m_state == 0)
+            {
+                request->improv = 1;
+
+            }
+        }
+    }
 }
 
 #endif //WEBSERVER_THREADPOOL_HPP
