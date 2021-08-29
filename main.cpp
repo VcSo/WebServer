@@ -21,6 +21,9 @@ int main(int argc, char **argv)
     //server.setsql();
     server.setlog("./savelog/");
     server.threadpool();
+    server.trig_mode();
+
+//    server.Start();
 
     return 0;
 }
