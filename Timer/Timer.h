@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 
 #include "../Log/Log.h"
 
