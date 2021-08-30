@@ -62,6 +62,36 @@ void Server::trig_mode()
             m_conn_mode = 1;
             break;
     }
+}
 
-    
+void Server::event_listen()
+{
+    m_listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    assert(m_listenfd >= 0);
+
+    struct linger tmp = {m_linger, 1};
+    setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
+
+    int ret = 0;
+    struct sockaddr_in saddr;
+    bzero(&saddr, sizeof(saddr));
+    saddr.sin_family = AF_INET;
+    saddr.sin_port = htons(m_port);
+    saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    int reuse = 1;
+    setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    ret = bind(m_listenfd, (struct sockaddr *) &saddr, sizeof(saddr));
+    assert(ret >= 0);
+
+    ret = listen(m_listenfd, 5);
+    assert(ret >= 0);
+
+    utils.init(TIMESLOT);
+
+    epoll_event events[MAX_EVENT_NUMBER];
+    m_epollfd = epoll_create(5);
+    assert(m_epollfd != -1);
+    utils.addfd(m_epollfd, m_listenfd, false, m_listen_mode);
+
 }
