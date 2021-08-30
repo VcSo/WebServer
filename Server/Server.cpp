@@ -93,5 +93,10 @@ void Server::event_listen()
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
     utils.addfd(m_epollfd, m_listenfd, false, m_listen_mode);
+    Http::m_epollfd = m_epollfd;
+
+    ret = socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd);
+    assert(ret != -1);
+    utils.setnonblocking(m_pipefd[1]);
 
 }

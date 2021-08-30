@@ -43,6 +43,7 @@ private:
     int m_listenfd;
     int m_connfd;
     int m_epollfd;
+    int m_pipefd[2];
 
     std::string m_host;
     std::string m_username;
