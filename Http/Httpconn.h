@@ -9,6 +9,9 @@ public:
     Http();
     ~Http();
 
+    static int m_epollfd;
+    static int m_user_count;
+
 private:
     int m_state;
     int improv;
