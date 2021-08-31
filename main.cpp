@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     server.threadpool();
     server.trig_mode();
 
-//    server.Start();
+    server.Start();
 
     return 0;
 }
