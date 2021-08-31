@@ -116,7 +116,7 @@ void Server::Start()
 
     while(!stop_server)
     {
-        int number = epoll_wait(m_epollfd, events)
+        int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
     }
 
 }
