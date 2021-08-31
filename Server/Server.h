@@ -53,6 +53,9 @@ private:
 
     bool m_uselog;
 
+    //epoll_event相关
+    epoll_event events[MAX_EVENT_NUMBER];
+
     connSql *m_consql;
     ThreadPool<Http> *m_pool;
     Utils utils;

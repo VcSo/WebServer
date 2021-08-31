@@ -89,7 +89,6 @@ void Server::event_listen()
 
     utils.init(TIMESLOT);
 
-    epoll_event events[MAX_EVENT_NUMBER];
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
     utils.addfd(m_epollfd, m_listenfd, false, m_listen_mode);
@@ -98,5 +97,26 @@ void Server::event_listen()
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd);
     assert(ret != -1);
     utils.setnonblocking(m_pipefd[1]);
+    utils.addfd(m_epollfd, m_pipefd[0], false, 0);
+
+    utils.addsig(SIGPIPE, SIG_IGN);
+    utils.addsig(SIGALRM, utils.sig_handler, false);
+    utils.addsig(SIGTERM, utils.sig_handler, false);
+
+    alarm(TIMESLOT);
+
+    Utils::u_pipefd = m_pipefd;
+    Utils::m_epollfd = m_epollfd;
+}
+
+void Server::Start()
+{
+    bool timeout = false;
+    bool stop_server = false;
+
+    while(!stop_server)
+    {
+        int number = epoll_wait(m_epollfd, events)
+    }
 
 }
