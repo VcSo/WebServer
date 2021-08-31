@@ -34,3 +34,24 @@ void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode)
     epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
     setnonblocking(fd);
 }
+
+void Utils::sig_handler(int sig)
+{
+    int save_errno = errno;
+    int msg = sig;
+    send(u_pipefd[1], (char *)&msg, 1, 0);
+    errno = save_errno;
+}
+
+
+void Utils::addsig(int sig, void (*handler)(int), bool restart)
+{
+    struct sigaction sa;
+    memset(&sa. '\0', sizeof(sa));
+    sa.sa_handler = handler;
+
+    if (restart)
+        sa.sa_flags |= SA_RESTART;
+    sigfillset(&sa.sa_mask);
+    assert(sigaction(sig, &sa, NULL) != -1);
+}

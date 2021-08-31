@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/socket.h>
+#include <signal.h>
 #include <fcntl.h>
 
 #include "../Log/Log.h"
@@ -58,13 +59,15 @@ public:
     void addsig(int sig, void(handler)(int), bool restart = true);
     void timer_handler();
     void show_error(int connfdm const char *info);
+    static void sig_handler(int sig);
 
     int setnonblocking(int fd);
 
+    static int *u_pipefd;
+    static int m_epollfd;
+
 private:
     int m_timeslot;
-    static int m_epollfd;
-    static int *u_pipefd;
 
     sort_timer_lst m_timer_lst;
 };
