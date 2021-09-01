@@ -1,15 +1,17 @@
 #include "Server.h"
 
 Server::Server(int port, std::string host, std::string username, std::string password, std::string database,
-                bool uselog, int linger, int mode, int sqlnum, int threadnum, int actor, int logmode)
+                int uselog, int linger, int mode, int sqlnum, int threadnum, int actor, int logmode)
                 : m_port(port), m_host(host), m_username(username), m_password(password), m_database(database),
-                    m_uselog(uselog), m_linger(linger), et(mode), m_sql_num(sqlnum), m_thread_num(threadnum), m_actor(actor), m_log_mode(logmode)
+                    m_close_log(uselog), m_linger(linger), et(mode), m_sql_num(sqlnum), m_thread_num(threadnum), m_actor(actor), m_log_mode(logmode)
 {
 
 }
 
 Server::~Server()
-{}
+{
+
+}
 
 void Server::setsql()
 {
@@ -20,13 +22,13 @@ void Server::setsql()
 void Server::setlog(std::string path)
 {
     m_log_path = path;
-    if(m_uselog)
+    if(m_close_log)
     {
         if(m_log_mode == 1)
         {
-            Log::get_instance()->init(m_log_path, m_uselog, 2000, 800000, 800);
+            Log::get_instance()->init(m_log_path, m_close_log, 2000, 800000, 800);
         } else{
-            Log::get_instance()->init(m_log_path, m_uselog, 2000, 800000, 0);
+            Log::get_instance()->init(m_log_path, m_close_log, 2000, 800000, 0);
         }
     }
 
@@ -106,7 +108,7 @@ void Server::event_listen()
     alarm(TIMESLOT);
 
     Utils::u_pipefd = m_pipefd;
-    Utils::m_epollfd = m_epollfd;
+    Utils::u_epollfd = m_epollfd;
 }
 
 void Server::Start()
@@ -114,14 +116,14 @@ void Server::Start()
     bool timeout = false;
     bool stop_server = false;
 
-    while(!stop_server)
+    //while(!stop_server)
     {
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
         if (number < 0 && errno != EINTR)
         {
             LOG_ERROR("%s", "epoll failure");
-            break;
         }
+
     }
 
 

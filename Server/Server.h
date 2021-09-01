@@ -8,7 +8,6 @@
 #include <assert.h>
 #include <sys/epoll.h>
 
-#include "../Log/Log.h"
 #include "../Sql/connSql.h"
 #include "../Pool/ThreadPool.hpp"
 #include "../Http/Httpconn.h"
@@ -20,7 +19,7 @@ const int TIMESLOT = 5;
 class Server {
 public:
     Server(int port, std::string m_host, std::string username, std::string password, std::string database,
-                   bool uselog, int linger, int mode, int sqlnum, int threadnum, int actor, int logmode);
+                   int uselog, int linger, int mode, int sqlnum, int threadnum, int actor, int logmode);
     ~Server();
 
     void setsql();
@@ -44,14 +43,13 @@ private:
     int m_connfd;
     int m_epollfd;
     int m_pipefd[2];
+    int m_close_log;
 
     std::string m_host;
     std::string m_username;
     std::string m_password;
     std::string m_database;
     std::string m_log_path;
-
-    bool m_uselog;
 
     //epoll_event相关
     epoll_event events[MAX_EVENT_NUMBER];
