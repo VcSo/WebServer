@@ -21,7 +21,7 @@ Log *Log::get_instance()
     return &log;
 }
 
-bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size)
+bool Log::init(std::string path, int uselog, int log_buf_size, int split_line, int max_queue_size)
 {
     m_split_lines = split_line;
     m_close_log = uselog;
