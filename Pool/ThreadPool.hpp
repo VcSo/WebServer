@@ -26,7 +26,7 @@ private:
     int m_actor;
     int m_thread_num;
 
-    std::list<T> m_queue;
+    std::list<T*> m_queue;
 
     Sem m_queue_stat;
     Locker m_mutex;
@@ -100,7 +100,6 @@ void ThreadPool<T>::run()
             if(request->m_state == 0)
             {
                 request->improv = 1;
-
             }
         }
     }
