@@ -1,5 +1,29 @@
 #include "Timer.h"
 
+sort_timer_lst::sort_timer_lst()
+{
+    head = nullptr;
+    tail = nullptr;
+}
+
+sort_timer_lst::~sort_timer_lst()
+{
+    util_timer *tmp = head;
+    while(tmp)
+    {
+        head = tmp->next;
+        delete tmp;
+        tmp = head;
+    }
+}
+
+int *Utils::u_pipefd = 0;
+int Utils::u_epollfd = 0;
+
+Utils::Utils() {}
+
+Utils::~Utils() {}
+
 void Utils::init(int timeslot)
 {
     m_timeslot = timeslot;
@@ -47,7 +71,7 @@ void Utils::sig_handler(int sig)
 void Utils::addsig(int sig, void (*handler)(int), bool restart)
 {
     struct sigaction sa;
-    memset(&sa. '\0', sizeof(sa));
+    memset(&sa, '\0', sizeof(sa));
     sa.sa_handler = handler;
 
     if (restart)

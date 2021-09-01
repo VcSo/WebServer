@@ -2,10 +2,15 @@
 #define WEBSERVER_TIMER_H
 
 #include <unistd.h>
+#include <cassert>
+#include <cstring>
 #include <time.h>
 #include <sys/socket.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "../Log/Log.h"
 
@@ -13,7 +18,7 @@ class util_timer;
 
 struct client_data
 {
-    struct sockaddr_in addr;
+    sockaddr_in addr;
     int fd;
     util_timer *timer;
 };
@@ -58,13 +63,13 @@ public:
     void addfd(int epollfd, int fd, bool one_shot, int TRIGMode);
     void addsig(int sig, void(handler)(int), bool restart = true);
     void timer_handler();
-    void show_error(int connfdm const char *info);
+    void show_error(int connfdm, const char *info);
     static void sig_handler(int sig);
 
     int setnonblocking(int fd);
 
     static int *u_pipefd;
-    static int m_epollfd;
+    static int u_epollfd;
 
 private:
     int m_timeslot;
