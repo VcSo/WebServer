@@ -27,7 +27,7 @@ public:
 
 private:
     Log();
-    ~Log();
+    virtual ~Log();
     void *async_write_log();
 
     std::string m_logfile_name;
@@ -48,9 +48,9 @@ private:
     Locker m_mutex;
 };
 
-#define LOG_DEBUG(format, ...) if(true == m_close_log) {Log::get_instance()->write_log(0, format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_INFO(format, ...) if(true == m_close_log) {Log::get_instance()->write_log(1, format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_WARN(format, ...) if(true == m_close_log) {Log::get_instance()->write_log(2, format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_ERROR(format, ...) if(true == m_close_log) {Log::get_instance()->write_log(3, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_DEBUG(format, ...) if(1 == m_close_log) {Log::get_instance()->write_log(0, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_INFO(format, ...) if(1 == m_close_log) {Log::get_instance()->write_log(1, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_WARN(format, ...) if(1 == m_close_log) {Log::get_instance()->write_log(2, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_ERROR(format, ...) if(1 == m_close_log) {Log::get_instance()->write_log(3, format, ##__VA_ARGS__); Log::get_instance()->flush();}
 
 #endif //WEBSERVER_LOG_H
