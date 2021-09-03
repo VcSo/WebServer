@@ -79,3 +79,9 @@ void Utils::addsig(int sig, void (*handler)(int), bool restart)
     sigfillset(&sa.sa_mask);
     assert(sigaction(sig, &sa, NULL) != -1);
 }
+
+void Utils::show_error(int connfd, const char *info)
+{
+    send(connfd, info, strlen(info), 0);
+    close(connfd);
+}

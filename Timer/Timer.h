@@ -63,7 +63,7 @@ public:
     void addfd(int epollfd, int fd, bool one_shot, int TRIGMode);
     void addsig(int sig, void(handler)(int), bool restart = true);
     void timer_handler();
-    void show_error(int connfdm, const char *info);
+    void show_error(int connfd, const char *info);
     static void sig_handler(int sig);
 
     int setnonblocking(int fd);
