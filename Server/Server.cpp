@@ -5,11 +5,15 @@ Server::Server(int port, std::string host, std::string username, std::string pas
                 : m_port(port), m_host(host), m_username(username), m_password(password), m_database(database),
                     m_close_log(uselog), m_linger(linger), et(mode), m_sql_num(sqlnum), m_thread_num(threadnum), m_actor(actor), m_log_mode(logmode)
 {
-
+    users = new Http[MAX_FD];
+    users_timer = new client_data[MAX_FD];
 }
 
 Server::~Server()
 {
+    delete[] users;
+    delete[] users_timer;
+    delete m_pool;
 
 }
 
@@ -17,6 +21,7 @@ void Server::setsql()
 {
     m_consql = connSql::get_instance();
     m_consql->init(m_host, m_username, m_password, m_database, m_sql_num);
+    //users->initmysql_result(m_connPool);
 }
 
 void Server::setlog(std::string path)
@@ -115,17 +120,80 @@ void Server::Start()
 {
     bool timeout = false;
     bool stop_server = false;
+    LOG_INFO("%s", "Server Start");
 
-    //while(!stop_server)
+    while(!stop_server)
     {
+
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
         if (number < 0 && errno != EINTR)
         {
             LOG_ERROR("%s", "epoll failure");
+            break;
+        }
+
+        for(int i = 0; i < number; i++)
+        {
+            int sockfd = events[i].data.fd;
+
+            if(sockfd == m_listenfd)
+            {
+                bool flag = deal_client_data();
+            }
+
         }
 
     }
+}
 
+bool Server::deal_client_data()
+{
+    struct sockaddr_in client_addr;
+    //memset(&client_addr, '\0', sizeof(client_addr));
+    socklen_t client_addr_len = sizeof(client_addr);
 
+    if(m_listen_mode == 0)
+    {
+        int connfd = accept(m_listenfd, (struct sockaddr *) &client_addr, &client_addr_len);
+        if(connfd < 0)
+        {
+            LOG_ERROR("%s: errno is %d", "accept error", errno);
+            return false;
+        }
 
+        if(Http::m_user_count >= MAX_FD)
+        {
+            utils.show_error(connfd, "server busy");
+            LOG_ERROR("%s", "Internal server busy");
+            return false;
+        }
+        timer(connfd, client_address);
+    }
+    else
+    {
+        while(true)
+        {
+            int connfd = accept(m_listenfd, (struct sockaddr*) &client_addr, &client_addr_len);
+            if(connfd < 0)
+            {
+                LOG_ERROR("%s:errno is:%d", "accept error", errno);
+                break;
+            }
+
+            if(Http::m_user_count >= MAX_FD)
+            {
+                utils.show_error(connfd, "Internal server busy");
+                LOG_ERROR("%s", "Internal server busy");
+                break;
+            }
+
+            timer(connfd, client_addr);
+        }
+    }
+
+}
+
+void Server::timer(int connfd, struct sockaddr_in client_addr)
+{
+    users
 }

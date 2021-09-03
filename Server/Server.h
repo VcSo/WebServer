@@ -28,6 +28,9 @@ public:
     void threadpool();
     void trig_mode();
     void event_listen();
+    void timer(int connfd, struct sockaddr_in client_addr);
+
+    bool deal_client_data();
 
 private:
     int m_port;
@@ -57,6 +60,8 @@ private:
     connSql *m_consql;
     ThreadPool<Http> *m_pool;
     Utils utils;
+    Http *users;
+    client_data *users_timer;
 };
 
 #endif //WEBSERVER_SERVER_H
