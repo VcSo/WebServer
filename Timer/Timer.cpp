@@ -1,5 +1,9 @@
 #include "Timer.h"
 
+util_timer::util_timer() : prev(nullptr), next(nullptr)
+{
+}
+
 sort_timer_lst::sort_timer_lst()
 {
     head = nullptr;
@@ -15,6 +19,91 @@ sort_timer_lst::~sort_timer_lst()
         delete tmp;
         tmp = head;
     }
+}
+
+void sort_timer_lst::del_timer(util_timer *timer)
+{
+    if (!timer)
+    {
+        return;
+    }
+    if ((timer == head) && (timer == tail))
+    {
+        delete timer;
+        head = nullptr;
+        tail = nullptr;
+        return;
+    }
+    if (timer == head)
+    {
+        head = head->next;
+        head->prev = NULL;
+        delete timer;
+        return;
+    }
+    if (timer == tail)
+    {
+        tail = tail->prev;
+        tail->next = NULL;
+        delete timer;
+        return;
+    }
+    timer->prev->next = timer->next;
+    timer->next->prev = timer->prev;
+    delete timer;
+}
+
+void sort_timer_lst::add_timer(util_timer *timer)
+{
+    if(!timer)
+    {
+        return;
+    }
+
+    if(!head)
+    {
+        head = tail = timer;
+        return;
+    }
+
+    if(timer->expire < head->expire)
+    {
+        timer->next = head;
+        head->prev = timer;
+        head = timer;
+        return;
+    }
+
+    add_timer(timer, head);
+}
+
+void sort_timer_lst::add_timer(util_timer *timer, util_timer *head)
+{
+    util_timer *tmp = timer;
+    util_timer *headtimer = head;
+
+    while(tmp)
+    {
+        if(tmp->expire < headtimer->expire)
+        {
+            timer->next = headtimer;
+            headtimer->prev = timer;
+            headtimer = timer;
+            break;
+        }
+
+        headtimer = tmp;
+        tmp = tmp->next;
+    }
+
+    if(!tmp)
+    {
+        headtimer->next = timer;
+        timer->prev = headtimer;
+        timer->next = nullptr;
+        tail = timer;
+    }
+
 }
 
 int *Utils::u_pipefd = 0;
@@ -84,4 +173,13 @@ void Utils::show_error(int connfd, const char *info)
 {
     send(connfd, info, strlen(info), 0);
     close(connfd);
+}
+
+class Utils;
+void cb_func(client_data *user_data)
+{
+    epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, user_data->fd, 0);
+    assert(user_data);
+    close(user_data->fd);
+    Http::m_user_count--;
 }

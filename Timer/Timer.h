@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "../Http/Httpconn.h"
 #include "../Log/Log.h"
 
 class util_timer;
@@ -28,6 +29,8 @@ public:
     util_timer();
 
 public:
+    void (* cb_func)(client_data *);
+
     time_t expire;
     client_data *user_data;
     util_timer *prev;
@@ -46,7 +49,7 @@ public:
     void tick();
 
 private:
-    void add_timer(util_timer *timer, util_timer *headtimer);
+    void add_timer(util_timer *timer, util_timer *head);
 
     util_timer *head;
     util_timer *tail;
@@ -70,10 +73,7 @@ public:
 
     static int *u_pipefd;
     static int u_epollfd;
-
-private:
     int m_timeslot;
-
     sort_timer_lst m_timer_lst;
 };
 
