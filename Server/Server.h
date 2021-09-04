@@ -11,6 +11,7 @@
 #include "../Sql/connSql.h"
 #include "../Pool/ThreadPool.hpp"
 #include "../Http/Httpconn.h"
+#include "../Timer/Timer.h"
 
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
@@ -29,8 +30,10 @@ public:
     void trig_mode();
     void event_listen();
     void timer(int connfd, struct sockaddr_in client_addr);
+    void deal_timer(util_timer *timer, int sockfd);
 
     bool deal_client_data();
+    bool dealwithsignal(bool &timeout, bool &stop_server);
 
 private:
     int m_port;
@@ -53,6 +56,7 @@ private:
     std::string m_password;
     std::string m_database;
     std::string m_log_path;
+    char *m_root;
 
     //epoll_event相关
     epoll_event events[MAX_EVENT_NUMBER];

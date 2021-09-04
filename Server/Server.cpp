@@ -7,14 +7,24 @@ Server::Server(int port, std::string host, std::string username, std::string pas
 {
     users = new Http[MAX_FD];
     users_timer = new client_data[MAX_FD];
+    char server_path[200];
+    getcwd(server_path, 200);
+    char root[] = "/resources";
+    m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
+    strcpy(m_root, server_path);
+    strcat(m_root, root);
 }
 
 Server::~Server()
 {
+    close(m_epollfd);
+    close(m_listenfd);
+    close(m_pipefd[1]);
+    close(m_pipefd[0]);
+
     delete[] users;
     delete[] users_timer;
     delete m_pool;
-
 }
 
 void Server::setsql()
@@ -139,8 +149,22 @@ void Server::Start()
             if(sockfd == m_listenfd)
             {
                 bool flag = deal_client_data();
+                if(flag == false)
+                {
+                    continue;
+                }
             }
-
+            else if(events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
+            {
+                util_timer *timer = users_timer[sockfd].timer;
+                deal_timer(timer, sockfd);
+            }
+            else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN))
+            {
+                bool flag = dealwithsignal(timeout, stop_server);
+                if (false == flag)
+                    LOG_ERROR("%s", "dealclientdata failure");
+            }
         }
 
     }
@@ -167,7 +191,7 @@ bool Server::deal_client_data()
             LOG_ERROR("%s", "Internal server busy");
             return false;
         }
-        timer(connfd, client_address);
+        timer(connfd, client_addr);
     }
     else
     {
@@ -189,11 +213,64 @@ bool Server::deal_client_data()
 
             timer(connfd, client_addr);
         }
+        return false;
     }
-
+    return true;
 }
 
 void Server::timer(int connfd, struct sockaddr_in client_addr)
 {
-    users
+    users[connfd].init(connfd, client_addr, m_root, m_conn_mode, m_close_log, m_username, m_password, m_database);
+    users_timer[connfd].addr = client_addr;
+    users_timer[connfd].fd = connfd;
+    util_timer *timer = new util_timer;
+    timer->user_data = &users_timer[connfd];
+    timer->cb_func = cb_func;
+
+    time_t cur = time(nullptr);
+    timer->expire = cur + 3 + TIMESLOT;
+    users_timer[connfd].timer = timer;
+    utils.m_timer_lst.add_timer(timer);
+}
+
+void Server::deal_timer(util_timer *timer, int sockfd)
+{
+    timer->cb_func(&users_timer[sockfd]);
+    if(timer)
+    {
+        utils.m_timer_lst.del_timer(timer);
+    }
+
+    LOG_INFO("close fd %d", users_timer[sockfd].fd);
+}
+
+bool Server::dealwithsignal(bool &timeout, bool &stop_server)
+{
+    int ret = 0;
+    int sig;
+    char signals[1024];
+
+    ret = recv(m_pipefd[0], signals, sizeof(signals), 0);
+    if(ret <= 0)
+    {
+        return false;
+    }
+    else
+    {
+        for(int i = 0; i < ret; i++)
+        {
+            switch(signals[i])
+            {
+                case SIGALRM:
+                    timeout = false;
+                    break;
+                case SIGTERM:
+                    stop_server = true;
+                    break;
+            }
+        }
+    }
+
+    return true;
+
 }
