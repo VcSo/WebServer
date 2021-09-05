@@ -16,6 +16,7 @@ public:
     ThreadPool(int actor, connSql *m_sql, int threadnum = 8, int max_request = 10000);
     ~ThreadPool();
 
+    bool append(T *request, int state);
 
 private:
     static void* worker(void *arg);
@@ -25,6 +26,7 @@ private:
 
     int m_actor;
     int m_thread_num;
+    int m_max_request;
 
     std::list<T*> m_queue;
 
@@ -33,7 +35,8 @@ private:
 };
 
 template <typename T>
-ThreadPool<T>::ThreadPool(int actor, connSql *m_sql, int threadnum, int max_request) : m_actor(actor), m_thread_num(threadnum)
+ThreadPool<T>::ThreadPool(int actor, connSql *m_sql, int threadnum, int max_request) :
+                            m_actor(actor), m_thread_num(threadnum), m_max_request(max_request)
 {
     if(threadnum <= 0 || max_request <= 0)
     {
@@ -109,6 +112,24 @@ void ThreadPool<T>::run()
             }
         }
     }
+}
+
+template <typename T>
+bool ThreadPool<T>::append(T *request, int state)
+{
+    m_mutex.lock();
+    if(m_queue.size() >= m_max_request)
+    {
+        m_mutex.unlock();
+        return false;
+    }
+
+    request->m_state = state;
+    m_queue.push_back(request);
+    m_mutex.unlock();
+    m_queue_stat.post();
+    return true;
+
 }
 
 #endif //WEBSERVER_THREADPOOL_HPP
