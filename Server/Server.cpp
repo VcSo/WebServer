@@ -165,6 +165,11 @@ void Server::Start()
                 if (false == flag)
                     LOG_ERROR("%s", "dealclientdata failure");
             }
+            //处理客户连接上接收到的数据
+            else if (events[i].events & EPOLLIN)
+            {
+                dealwithread(sockfd);
+            }
         }
 
     }
@@ -272,5 +277,35 @@ bool Server::dealwithsignal(bool &timeout, bool &stop_server)
     }
 
     return true;
+}
 
+void Server::dealwithread(int sockfd)
+{
+    util_timer *timer = users_timer[sockfd].timer;
+    if(m_actor == 1)
+    {
+        if(timer)
+        {
+            adjust_timer(timer);
+        }
+
+        m_pool->append(users + sockfd, 0);
+
+        while(true)
+        {
+            if(users[sockfd].improv == 1)
+            {
+
+            }
+        }
+    }
+}
+
+void Server::adjust_timer(util_timer *timer)
+{
+    time_t cur = time(NULL);
+    timer->expire = cur + 3 * TIMESLOT;
+    utils.m_timer_lst.adjust_timer(timer);
+
+    LOG_INFO("%s", "adjust timer once");
 }
