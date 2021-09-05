@@ -106,6 +106,35 @@ void sort_timer_lst::add_timer(util_timer *timer, util_timer *head)
 
 }
 
+void sort_timer_lst::adjust_timer(util_timer *timer)
+{
+    if(!timer)
+    {
+        return;
+    }
+
+    util_timer *tmp = timer->next;
+    if(!tmp || timer->expire < tmp->expire)
+    {
+        return;
+    }
+
+    if(timer == head)
+    {
+        head = head->next;
+        head->prev = nullptr;
+        head->next = nullptr;
+        add_timer(timer, head);
+    }
+    else
+    {
+        timer->prev->next = timer->next;
+        timer->next->prev = timer->prev;
+        add_timer(timer, timer->next);
+    }
+
+}
+
 int *Utils::u_pipefd = 0;
 int Utils::u_epollfd = 0;
 
