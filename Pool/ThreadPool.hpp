@@ -17,6 +17,7 @@ public:
     ~ThreadPool();
 
     bool append(T *request, int state);
+    bool append_p(T *request);
 
 private:
     static void* worker(void *arg);
@@ -130,6 +131,23 @@ bool ThreadPool<T>::append(T *request, int state)
     m_queue_stat.post();
     return true;
 
+}
+
+template <typename T>
+bool ThreadPool<T>::append_p(T *request)
+{
+    m_mutex.lock();
+    if(m_queue.size() >= m_max_request)
+    {
+        m_mutex.unlock();
+        return false;
+    }
+
+    m_queue.push_back(request);
+    m_mutex.unlock();
+    m_queue_stat.post();
+
+    return true;
 }
 
 #endif //WEBSERVER_THREADPOOL_HPP
