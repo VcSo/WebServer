@@ -26,6 +26,8 @@ int main(int argc, char **argv)
 
     server.Start();
 
+    std::cout << "Server close" << std::endl;
+
     return 0;
 }
 
