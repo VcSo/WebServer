@@ -170,6 +170,10 @@ void Server::Start()
             {
                 dealwithread(sockfd);
             }
+            else if (events[i].events & EPOLLOUT)
+            {
+                dealwithwrite(sockfd);
+            }
         }
 
     }
@@ -295,9 +299,36 @@ void Server::dealwithread(int sockfd)
         {
             if(users[sockfd].improv == 1)
             {
+                if(users[sockfd].timer_flag == 1)
+                {
+                    deal_timer(timer, sockfd);
+                    users[sockfd].timer_flag = 0;
+                }
 
+                users[sockfd].improv = 0;
+                break;
             }
         }
+    }
+    else{
+        //proactor
+        if(users[sockfd].read_once())
+        {
+            LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
+            m_pool->append_p(users + sockfd);
+
+            if (timer)
+            {
+                adjust_timer(timer);
+            }
+        }
+        else
+        {
+            deal_timer(timer, sockfd);
+        }
+
+
+
     }
 }
 
@@ -308,4 +339,50 @@ void Server::adjust_timer(util_timer *timer)
     utils.m_timer_lst.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
+}
+
+void Server::dealwithwrite(int sockfd)
+{
+    util_timer *timer = users_timer[sockfd].timer;
+    if(m_actor == 1)
+    {
+        if(timer)
+        {
+            adjust_timer(timer);
+        }
+
+        m_pool->append(users + sockfd, 1);
+
+        while(true)
+        {
+            if (1 == users[sockfd].improv)
+            {
+                if (1 == users[sockfd].timer_flag)
+                {
+                    deal_timer(timer, sockfd);
+                    users[sockfd].timer_flag = 0;
+                }
+                users[sockfd].improv = 0;
+                break;
+            }
+        }
+    }
+    else
+    {
+        //proactor
+        if (users[sockfd].write())
+        {
+            LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
+
+            if (timer)
+            {
+                adjust_timer(timer);
+            }
+        }
+        else
+        {
+            deal_timer(timer, sockfd);
+        }
+    }
+
 }
