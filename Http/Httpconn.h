@@ -62,6 +62,16 @@ public:
 
     void init(int sockfd, const struct sockaddr_in &addr, char *m_root, int conn_mode, int close_log,
                 std::string username, std::string password, std::string database);
+    void close_conn(bool real_close = true);
+    void process();
+    void initmysql_result(connection_pool *connPool);
+
+    bool read_once();
+    bool write();
+    sockaddr_in *get_address()
+    {
+        return &m_address;
+    }
 
 public:
     static int m_epollfd;
@@ -69,6 +79,7 @@ public:
 
     int m_state;
     int improv;
+    int timer_flag;
     MYSQL *mysql;
 
 private:
@@ -85,7 +96,6 @@ private:
     int m_read_idx;
     int m_write_idx;
     int cgi;
-    int timer_flag;
 
     char *doc_root;
     char *m_url;
