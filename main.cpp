@@ -15,11 +15,11 @@ int main(int argc, char **argv)
         port = atoi(argv[1]);
     }
 
-    Server server(port, "localhost", "root", "vcvc", "server",
+    Server server(port, "localhost", "root", "Aa1248800211", "serverm",
                     1, 1, 1, 8, 10, 1, 1); //启用 友善关闭 lt/et sql thread actor 异步
 
     server.setlog("./Savelog/");
-    //server.setsql();
+    server.setsql();
     server.threadpool();
     server.trig_mode();
     server.event_listen();
