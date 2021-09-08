@@ -15,12 +15,16 @@
 
 #include "./Block_queue.hpp"
 
+namespace vc
+{
+
+}
 class Log {
 public:
     static Log *get_instance();
     static void *flush_log_threaad(void *args);
 
-    bool init(std::string path, int uselog, int log_buf_size, int split_line, int max_queue_size);
+    bool init(std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size);
 
     void flush();
     void write_log(int level, const char *format, ...);
@@ -38,9 +42,10 @@ private:
     int m_today; //因为按天分类,记录当前时间是那一天
     int m_split_lines;  //日志最大行数
     int m_log_buf_size; //日志缓冲区大小
-    int m_close_log;
 
+    bool m_close_log;
     bool m_is_async;
+
     long long m_count;  //日志行数记录
     char *m_buf;
 
