@@ -4,6 +4,7 @@
 #include <string>
 
 #include "../Log/Log.h"
+#include "../Sql/connSql.h"
 
 class Server {
 public:
@@ -15,6 +16,7 @@ public:
                    int close_log, int lingermode, int et, int sql_threadnum, int threadnum, int actor_mode, int async);
 
     void set_log(std::string path);
+    void setsql();
 
 
 private:
@@ -33,6 +35,8 @@ private:
     int m_threadnum;
     int m_actor_mode;
     int m_async;
+
+    ConnSql *m_sql;
 };
 
 #endif

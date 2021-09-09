@@ -33,3 +33,8 @@ void Server::set_log(std::string path)
     }
 }
 
+void Server::setsql()
+{
+    m_sql = ConnSql::getinstance();
+    m_sql->init()
+}
