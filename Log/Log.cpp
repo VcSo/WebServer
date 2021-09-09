@@ -24,7 +24,7 @@ Log *Log::get_instance()
     return &log;
 }
 
-bool Log::init(std::string path, int uselog, int log_buf_size, int split_line, int max_queue_size)
+bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size)
 {
     m_split_lines = split_line;
     m_close_log = uselog;
@@ -72,7 +72,6 @@ void *Log::flush_log_threaad(void *args)
 
 void* Log::async_write_log()
 {
-    std::cout << __LINE__ << std::endl;
     std::string single_log;
     while (m_log_que->pop(single_log))
     {
@@ -133,7 +132,7 @@ void Log::write_log(int level, const char *format, ...)
 
     int n = snprintf(m_buf, 64,"%s %s", re_time, s);
     m_mutex.lock();
-    m_count++;
+    ++m_count;
     if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) //everyday log
     {
         writelog.close();
@@ -141,11 +140,11 @@ void Log::write_log(int level, const char *format, ...)
         {
             char *new_log;
             new_log = setlogname();
-            writelog.open(new_log, std::ios::app);
+            writelog.open(new_log, std::ios::binary);
             if(!writelog.is_open())
             {
                 //LOG_ERROR("Create new logfile error");
-                writelog.open(new_log, std::ios::app);
+                writelog.open(new_log, std::ios::binary);
             }
         }
         else
@@ -153,11 +152,11 @@ void Log::write_log(int level, const char *format, ...)
             char *new_log;
             file_num++;
             new_log = setlogname();
-            writelog.open(new_log, std::ios::app);
+            writelog.open(new_log, std::ios::binary);
             if(!writelog.is_open())
             {
                 //LOG_ERROR("Create new logfile error");
-                writelog.open(new_log, std::ios::app);
+                writelog.open(new_log, std::ios::binary);
             }
         }
     }
