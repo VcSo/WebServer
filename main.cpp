@@ -19,13 +19,14 @@ int main(int argc, char **argv)
                     1, 1, 1, 8, 10, 1, 1); //启用 友善关闭 lt/et sql thread actor 异步
 
     server.set_log("./Savelog/");
-//    server.setsql();
+    server.setsql();
 //    server.threadpool();
 //    server.trig_mode();
 //    server.event_listen();
 //
 //    server.Start();
 
+    sleep(3);
     std::cout << "Server close" << std::endl;
 
     return 0;
