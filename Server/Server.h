@@ -5,18 +5,23 @@
 
 #include "../Log/Log.h"
 #include "../Sql/connSql.h"
+#include "../Http/Httpconn.h"
+
+const int MAX_FD = 65536;           //最大文件描述符
+const int MAX_EVENT_NUMBER = 10000; //最大事件数
+const int TIMESLOT = 5;             //最小超时单位
 
 class Server {
 public:
     Server();
-
     ~Server();
 
     Server(int port, std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
-                   int close_log, int lingermode, int et, int sql_threadnum, int threadnum, int actor_mode, int async);
+                   bool close_log, int lingermode, int et, int sql_threadnum, int threadnum, int actor_mode, int async);
 
     void set_log(std::string path);
     void setsql();
+    void threadpool();
 
 
 private:
@@ -28,6 +33,7 @@ private:
     char *m_root;
 
     bool m_close_log;
+
     int m_port;
     int m_lingermode;
     int m_et;
@@ -37,6 +43,7 @@ private:
     int m_async;
 
     ConnSql *m_sql;
+    Http *Users;
 };
 
 #endif
