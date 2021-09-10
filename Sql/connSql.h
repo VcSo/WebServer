@@ -10,18 +10,15 @@
 class ConnSql
 {
 public:
-    static ConnSql * getinstance()
-    {
-        ConnSql connsql;
-        return &connsql;
-    }
+    static ConnSql * getinstance();
 
-    void init(std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database, int sql_port, int max_conn = 10, bool close_log);
+    void init(std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
+                    int sql_port, int max_conn, bool close_log);
+    void DestroyPool();
 
 private:
     ConnSql();
     ~ConnSql();
-    void DestroyPool();
 
     std::string m_sql_username;
     std::string m_sql_password;
@@ -39,6 +36,16 @@ private:
     std::list<MYSQL *> connList;
     Locker m_mutex;
     Sem reverse;
+};
+
+class connectionRAII{
+public:
+    connectionRAII(MYSQL **con, ConnSql *connPool);
+    ~connectionRAII();
+
+private:
+    MYSQL *conRAII;
+    ConnSql *poolRAII;
 };
 
 #endif

@@ -1,5 +1,11 @@
 #include "connSql.h"
 
+ConnSql * ConnSql::getinstance()
+{
+    static ConnSql connsql;
+    return &connsql;
+}
+
 ConnSql::ConnSql() : m_Free_conn(0), m_cur_conn(0)
 {
 }
@@ -9,7 +15,7 @@ ConnSql::~ConnSql()
     DestroyPool();
 }
 
-void ConnSql::DestroyPool();
+void ConnSql::DestroyPool()
 {
     m_mutex.lock();
     if(connList.size() > 0)
@@ -28,13 +34,13 @@ void ConnSql::DestroyPool();
 }
 
 void ConnSql::init(std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
-                        int sql_threadnum, int sql_port, int max_conn, bool close_log)
+                        int sql_port, int max_conn, bool close_log)
 {
     m_localhost = localhost;
     m_sql_username = sql_username;
     m_sql_password = sql_password;
     m_sql_database = sql_database;
-    m_sql_threadnum = sql_threadnum;
+    m_sql_threadnum = max_conn;
     m_sql_port = sql_port;
     m_max_conn = max_conn;
     m_close_log = close_log;
@@ -61,6 +67,6 @@ void ConnSql::init(std::string localhost, std::string sql_username, std::string 
         ++m_Free_conn;
     }
 
-    reverse = sem(m_Free_conn);
+    reverse = Sem(m_Free_conn);
     m_max_conn = m_Free_conn;
 }
