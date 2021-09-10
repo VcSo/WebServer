@@ -16,11 +16,11 @@ int main(int argc, char **argv)
     }
 
     Server server(port, "localhost", "root", "Aa1248800211", "serverm",
-                    1, 1, 1, 8, 10, 1, 1); //启用 友善关闭 lt/et sql thread actor 异步
+                    true, 1, 1, 8, 10, 1, 1); //启用 友善关闭 lt/et sql thread actor 异步
 
     server.set_log("./Savelog/");
     server.setsql();
-//    server.threadpool();
+    //server.threadpool();
 //    server.trig_mode();
 //    server.event_listen();
 //
