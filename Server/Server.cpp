@@ -43,6 +43,7 @@ void Server::setsql()
 {
     m_sql = ConnSql::getinstance();
     m_sql->init(m_localhost, m_sql_username, m_sql_password, m_sql_database, 3306, m_sqlthreadnum, m_close_log);
+    Users->init_mysqlresult(m_sql);
     LOG_INFO("Test");
 }
 
