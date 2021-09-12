@@ -70,3 +70,29 @@ void ConnSql::init(std::string localhost, std::string sql_username, std::string 
     reverse = Sem(m_Free_conn);
     m_max_conn = m_Free_conn;
 }
+
+connectionRAII::connectionRAII(MYSQL **SQL, ConnSql *connPool)
+{
+    *SQL = connPool->GetConnection();
+}
+
+MYSQL * ConnSql::GetConnection()
+{
+    MYSQL *con = NULL;
+
+    if (0 == connList.size())
+        return NULL;
+
+    reverse.wait();
+
+    m_mutex.lock();
+
+    con = connList.front();
+    connList.pop_front();
+
+    --m_FreeConn;
+    ++m_CurConn;
+
+    m_mutex.unlock();
+    return con;
+}

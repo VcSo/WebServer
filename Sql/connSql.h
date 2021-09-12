@@ -14,6 +14,9 @@ public:
 
     void init(std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
                     int sql_port, int max_conn, bool close_log);
+    MYSQL *GetConnection();				 //获取数据库连接
+    bool ReleaseConnection(MYSQL *conn); //释放连接
+    int GetFreeConn();					 //获取连接
     void DestroyPool();
 
 private:
