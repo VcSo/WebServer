@@ -11,6 +11,7 @@
 
 #include "../Log/Log.h"
 #include "../Lock/Locker.h"
+#include "../Sql/connSql.h"
 
 class Http
 {
@@ -18,6 +19,8 @@ public:
     static const int FILENAME_LEN = 200;
     static const int READ_BUFFER_SIZE = 2048;
     static const int WRITE_BUFFER_SIZE = 1024;
+    static int m_user_count;
+    static int m_epollfd;
     enum METHOD
     {
         GET = 0,
@@ -57,11 +60,14 @@ public:
 public:
     Http();
     ~Http();
+    void init_mysqlresult(ConnSql *m_sql);
 
 private:
     int m_state;
     int m_write;
     int m_read;
+
+    Locker m_mutex;
 
 };
 
