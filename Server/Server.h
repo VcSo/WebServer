@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include <string>
+#include <iostream>
 
 #include "../Log/Log.h"
 #include "../Sql/connSql.h"
