@@ -67,6 +67,8 @@ private:
     int m_write;
     int m_read;
 
+    bool m_close_log;
+
     Locker m_mutex;
 
 };
