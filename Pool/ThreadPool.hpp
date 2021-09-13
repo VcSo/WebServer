@@ -26,7 +26,7 @@ private:
     void run();
 
     int m_threadnum;
-    int m_actor
+    int m_actor;
     int m_max_request;
 
     std::queue<T*> m_work_queue;
