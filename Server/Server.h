@@ -7,6 +7,7 @@
 #include "../Log/Log.h"
 #include "../Sql/connSql.h"
 #include "../Http/Httpconn.h"
+#include "../Pool/ThreadPool.hpp"
 
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
@@ -45,6 +46,7 @@ private:
 
     ConnSql *m_sql;
     Http *Users;
+    //ThreadPool<Http> *m_pool;
 };
 
 #endif
