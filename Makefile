@@ -4,7 +4,7 @@ LIB = -lpthread -lmysqlclient
 FLAGS = -std=c++11  -g
 
 #OBJS = main.cpp ./Server/*.cpp ./Log/*.cpp ./Log/Block_queue.hpp ./Sql/*.cpp ./Lock/*.cpp ./Pool/ThreadPool.hpp ./Http/*.cpp ./Timer/*.cpp
-OBJS = main.cpp ./Server/*.cpp ./Log/*.cpp ./Log/Block_queue.hpp ./Lock/*.cpp
+OBJS = main.cpp ./Server/*.cpp ./Log/*.cpp ./Sql/*.cpp ./Log/Block_queue.hpp ./Lock/*.cpp ./Http/*.cpp
 
 main: $(OBJS)
 	$(CXX) $(FLAGS) $(OBJS) -o $(APP) $(LIB)
