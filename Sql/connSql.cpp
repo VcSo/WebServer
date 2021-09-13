@@ -1,5 +1,7 @@
 #include "connSql.h"
 
+#include <iostream>
+
 ConnSql * ConnSql::getinstance()
 {
     static ConnSql connsql;
@@ -74,6 +76,14 @@ void ConnSql::init(std::string localhost, std::string sql_username, std::string 
 connectionRAII::connectionRAII(MYSQL **SQL, ConnSql *connPool)
 {
     *SQL = connPool->GetConnection();
+
+    conRAII = *SQL;
+    poolRAII = connPool;
+}
+
+connectionRAII::~connectionRAII()
+{
+    std::cout << "~connectionRAII" << std::endl;
 }
 
 MYSQL * ConnSql::GetConnection()
@@ -90,9 +100,27 @@ MYSQL * ConnSql::GetConnection()
     con = connList.front();
     connList.pop_front();
 
-    --m_FreeConn;
-    ++m_CurConn;
+    --m_Free_conn;
+    ++m_cur_conn;
 
     m_mutex.unlock();
     return con;
+}
+
+void ConnSql::ReleaseConnection(MYSQL *con)
+{
+    if (NULL == con)
+    {
+        LOG_ERROR("release sqlconn error");
+    }
+
+    m_mutex.lock();
+
+    connList.push_back(con);
+    ++m_Free_conn;
+    --m_cur_conn;
+
+    m_mutex.unlock();
+
+    reverse.post();
 }
