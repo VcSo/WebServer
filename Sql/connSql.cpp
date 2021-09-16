@@ -83,7 +83,8 @@ connectionRAII::connectionRAII(MYSQL **SQL, ConnSql *connPool)
 
 connectionRAII::~connectionRAII()
 {
-    std::cout << "~connectionRAII" << std::endl;
+    poolRAII->ReleaseConnection(conRAII);
+    //std::cout << "~connectionRAII" << std::endl;
 }
 
 MYSQL * ConnSql::GetConnection()
