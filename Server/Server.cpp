@@ -49,4 +49,5 @@ void Server::setsql()
 
 void Server::threadpool()
 {
+    m_pool = new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum);
 }

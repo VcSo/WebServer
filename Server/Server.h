@@ -46,7 +46,7 @@ private:
 
     ConnSql *m_sql;
     Http *Users;
-    //ThreadPool<Http> *m_pool;
+    ThreadPool<Http> *m_pool;
 };
 
 #endif
