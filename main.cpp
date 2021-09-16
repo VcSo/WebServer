@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
     server.set_log("./Savelog/");
     server.setsql();
-//    server.threadpool();
+    server.threadpool();
 //    server.trig_mode();
 //    server.event_listen();
 //
