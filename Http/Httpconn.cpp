@@ -44,3 +44,8 @@ void Http::init_mysqlresult(ConnSql *m_sql)
         users[temp1] = temp2;
     }
 }
+
+bool Http::read_once()
+{
+
+}

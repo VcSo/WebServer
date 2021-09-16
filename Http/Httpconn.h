@@ -60,12 +60,17 @@ public:
 public:
     Http();
     ~Http();
+
     void init_mysqlresult(ConnSql *m_sql);
+    bool read_once();
 
 private:
     int m_state;
     int m_write;
     int m_read;
+    int m_read_idx;
+    int m_checked_idx;
+    int m_start_line;
 
     bool m_close_log;
 
