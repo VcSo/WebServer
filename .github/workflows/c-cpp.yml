@@ -1,4 +1,4 @@
-name: C/C++ Webserver CI
+name: webserverci
 
 on:
   push:
