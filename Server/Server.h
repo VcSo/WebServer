@@ -24,7 +24,8 @@ public:
     void set_log(std::string path);
     void setsql();
     void threadpool();
-
+    void trig_mode();
+    void event_listen();
 
 private:
     std::string m_localhost;
@@ -43,6 +44,14 @@ private:
     int m_threadnum;
     int m_actor_mode;
     int m_async;
+    int m_listen_mode;
+    int m_conn_mode;
+
+    int m_pipefd[2];
+    int m_listenfd;
+    int m_epollfd;
+
+    epoll_event events[MAX_EVENT_NUMBER];
 
     ConnSql *m_sql;
     Http *Users;
