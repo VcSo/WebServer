@@ -18,9 +18,8 @@ public:
     ThreadPool(int actor, ConnSql *sql, int threadnum, int max_request = 10000);
     ~ThreadPool();
 
-    bool append();
-    bool append_p();
-
+    bool append(T *request, int state);
+    bool append_p(T *request);
 
 private:
     static void * worker(void *arg);
@@ -106,12 +105,43 @@ void ThreadPool<T>::run()
         {
             if(request->m_state == 0)
             {
-                if(request->read_once())
-                {
-                    request->improv = 1;
-
-                }
+//                if(request->read_once())
+//                {
+//
+//                }
             }
         }
     }
+}
+
+template <typename T>
+bool ThreadPool<T>::append(T *request, int state)
+{
+    m_mutex.lock();
+    if(m_work_queue.size() >= m_max_request)
+    {
+        m_mutex.unlock();
+        return false;
+    }
+    request->m_state = state;
+    m_work_queue.push(request);
+    m_mutex.unlock();
+    m_sem.post();
+    return true;
+}
+
+template <typename T>
+bool ThreadPool<T>::append_p(T *request)
+{
+    m_mutex.lock();
+    if(m_work_queue.size() >= m_max_request)
+    {
+        m_mutex.unlock();
+        return false;
+    }
+
+    m_work_queue.push(request);
+    m_mutex.unlock();
+    m_sem.post();
+    return true;
 }
