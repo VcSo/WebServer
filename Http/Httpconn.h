@@ -19,8 +19,6 @@ public:
     static const int FILENAME_LEN = 200;
     static const int READ_BUFFER_SIZE = 2048;
     static const int WRITE_BUFFER_SIZE = 1024;
-    static int m_user_count;
-    static int m_epollfd;
     enum METHOD
     {
         GET = 0,
@@ -57,6 +55,11 @@ public:
         LINE_OPEN
     };
 
+    static int m_user_count;
+    static int m_epollfd;
+    int m_state;
+    int improv;
+
 public:
     Http();
     ~Http();
@@ -65,7 +68,6 @@ public:
     bool read_once();
 
 private:
-    int m_state;
     int m_write;
     int m_read;
     int m_read_idx;
@@ -75,7 +77,7 @@ private:
     bool m_close_log;
 
     Locker m_mutex;
-
+    Sem m_sem;
 };
 
 #endif
