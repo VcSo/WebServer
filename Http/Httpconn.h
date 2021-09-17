@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <cassert>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
