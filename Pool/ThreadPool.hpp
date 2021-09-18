@@ -75,7 +75,6 @@ ThreadPool<T>::ThreadPool(int actor, ConnSql *sql, int threadnum, int max_reques
 template <typename T>
 void * ThreadPool<T>::worker(void *arg)
 {
-    std::cout << "threadnum" << std::endl;
     ThreadPool *pool = static_cast<ThreadPool *>(arg);
     pool->run();
     return pool;
