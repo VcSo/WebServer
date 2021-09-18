@@ -108,25 +108,38 @@ void Server::event_listen()
     ret = listen(m_listenfd, 5);
     assert(ret >= 0);
 
-    //utils
+    utils.init(TIMESLOT);
+
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
 
-    //utils
+    utils.addfd(m_epollfd, m_listenfd, false, m_listen_mode);
+
     Http::m_epollfd = m_epollfd;
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd);
     assert(ret != -1);
-//    utils.setnonblocking(m_pipefd[1]);
-//    utils.addfd(m_epollfd, m_pipefd[0], false, 0);
-//
-//    utils.addsig(SIGPIPE, SIG_IGN);
-//    utils.addsig(SIGALRM, utils.sig_handler, false);
-//    utils.addsig(SIGTERM, utils.sig_handler, false);
-//
-//    alarm(TIMESLOT);
-//
-//    //工具类,信号和描述符基础操作
-//    Utils::u_pipefd = m_pipefd;
-//    Utils::u_epollfd = m_epollfd;
+
+    utils.setnonblocking(m_pipefd[1]);
+    utils.addfd(m_epollfd, m_pipefd[0], false, 0);
+    utils.addsig(SIGPIPE, SIG_IGN);
+    utils.addsig(SIGALRM, utils.sig_handler, false);
+    utils.addsig(SIGTERM, utils.sig_handler, false);
+
+    alarm(TIMESLOT);
+
+    //工具类,信号和描述符基础操作
+    Utils::u_pipefd = m_pipefd;
+    Utils::u_epollfd = m_epollfd;
+}
+
+void Server::Start()
+{
+    bool timeout = true;
+    bool stop_server = false;
+
+    while(!stop_server)
+    {
+        int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
+    }
 
 }

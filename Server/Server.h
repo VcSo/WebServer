@@ -8,6 +8,7 @@
 #include "../Sql/connSql.h"
 #include "../Http/Httpconn.h"
 #include "../Pool/ThreadPool.hpp"
+#include "../Timer/Timer.h"
 
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
@@ -26,6 +27,7 @@ public:
     void threadpool();
     void trig_mode();
     void event_listen();
+    void Start();
 
 private:
     std::string m_localhost;
@@ -56,6 +58,7 @@ private:
     ConnSql *m_sql;
     Http *Users;
     ThreadPool<Http> *m_pool;
+    Utils utils;
 };
 
 #endif
