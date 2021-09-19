@@ -165,13 +165,15 @@ void Server::Start()
                 util_timer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
             }
-            else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN))
+            else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) //处理信号
             {
-
+                bool flag = dealwithsignal(timeout, stop_server);
+                if (flag == false)
+                    LOG_ERROR("%s", "dealclientdata failure");
             }
             else if (events[i].events & EPOLLIN)
             {
-
+                dealwithread(sockfd);
             }
             else if (events[i].events & EPOLLOUT)
             {
@@ -240,4 +242,43 @@ void Server::deal_timer(util_timer *timer, int sockfd)
     {
         utils.m_timer_lst.del_timer(timer);
     }
+
+    LOG_INFO("close fd %d", users_timer[sockfd].sockfd);
+}
+
+bool Server::dealwithsignal(bool &timeout, bool &stop_server)
+{
+    int ret = 0;
+    int sig;
+    char signals[1024];
+    ret = recv(m_pipefd[0], signals, sizeof(signals), 0);
+    if (ret == -1)
+    {
+        return false;
+    }
+    else if (ret == 0)
+    {
+        return false;
+    }
+    else
+    {
+        for (int i = 0; i < ret; ++i)
+        {
+            switch (signals[i])
+            {
+                case SIGALRM:
+                {
+                    timeout = true;
+                    break;
+                }
+                case SIGTERM:
+                {
+                    stop_server = true;
+                    break;
+                }
+            }
+        }
+    }
+    return true;
+
 }

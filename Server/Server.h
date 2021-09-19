@@ -33,6 +33,8 @@ public:
     void deal_timer(util_timer *timer, int sockfd);
 
     bool dealclientdata();
+    bool dealwithsignal(bool& timeout, bool& stop_server);
+    void dealwithread(int sockfd);
 
 private:
     std::string m_localhost;
