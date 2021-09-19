@@ -140,6 +140,104 @@ void Server::Start()
     while(!stop_server)
     {
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
+
+        if(number < 0 || errno != EINTR)
+        {
+            LOG_ERROR("%s", "epoll failure");
+            break;
+        }
+
+        for(int i = 0; i < number; ++i)
+        {
+            int sockfd = events[i].data.fd;
+
+            if(sockfd == m_listenfd)
+            {
+                bool flag = dealclientdata();
+                if(flag == false)
+                {
+                    continue;
+                }
+            }
+            else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
+            {
+                //服务器端关闭连接，移除对应的定时器
+                util_timer *timer = users_timer[sockfd].timer;
+                deal_timer(timer, sockfd);
+            }
+            else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN))
+            {
+
+            }
+            else if (events[i].events & EPOLLIN)
+            {
+
+            }
+            else if (events[i].events & EPOLLOUT)
+            {
+
+            }
+        }
+
+        if (timeout)
+        {
+            utils.timer_handler();
+
+            LOG_INFO("%s", "timer tick");
+
+            timeout = false;
+        }
     }
 
+}
+
+bool Server::dealclientdata()
+{
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_len = sizeof(client_addr);
+
+    if(m_listen_mode == 0)
+    {
+        int connfd = accept(m_listenfd, (struct sockaddr*) &client_addr, &client_addr_len);
+        if(connfd < 0)
+        {
+            LOG_ERROR("%s:errno is:%d", "accept error", errno);
+            return false;
+        }
+
+        if(Http::m_user_count >= MAX_FD)
+        {
+            utils.show_error(connfd, "Internal server busy");
+            LOG_ERROR("%s", "Internal server busy");
+            return false;
+        }
+
+        timer(connfd, client_addr);
+    }
+}
+
+void Server::timer(int connfd, struct sockaddr_in client_addr)
+{
+    Users[connfd].init(connfd, client_addr, m_root, m_conn_mode, m_close_log, m_sql_username, m_sql_password, m_sql_database);
+
+    //初始化client_data数据
+    //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
+    users_timer[connfd].address = client_addr;
+    users_timer[connfd].sockfd = connfd;
+    util_timer *timer = new util_timer;
+    timer->user_data = &users_timer[connfd];
+    timer->cb_func = cb_func;
+    time_t cur = time(NULL);
+    timer->expire = cur + 3 * TIMESLOT;
+    users_timer[connfd].timer = timer;
+    utils.m_timer_lst.add_timer(timer);
+}
+
+void Server::deal_timer(util_timer *timer, int sockfd)
+{
+    timer->cb_func(&users_timer[sockfd]);
+    if(timer)
+    {
+        utils.m_timer_lst.del_timer(timer);
+    }
 }

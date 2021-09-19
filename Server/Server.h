@@ -29,6 +29,11 @@ public:
     void event_listen();
     void Start();
 
+    void timer(int connfd, struct sockaddr_in client_addr);
+    void deal_timer(util_timer *timer, int sockfd);
+
+    bool dealclientdata();
+
 private:
     std::string m_localhost;
     std::string m_sql_username;
@@ -59,6 +64,7 @@ private:
     Http *Users;
     ThreadPool<Http> *m_pool;
     Utils utils;
+    client_data *users_timer;
 };
 
 #endif
