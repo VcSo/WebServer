@@ -16,6 +16,75 @@ Http::~Http()
 
 }
 
+//对文件描述符设置非阻塞
+int setnonblocking(int fd)
+{
+    int old_option = fcntl(fd, F_GETFL);
+    int new_option = old_option | O_NONBLOCK;
+    fcntl(fd, F_SETFL, new_option); //设置文件状态标记
+    return old_option;
+}
+
+void addfd(int epollfd, int sockfd, bool one_shot, int conn_mode)
+{
+    epoll_event event;
+    event.data.fd = sockfd;
+
+    if (1 == conn_mode)
+        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+    else
+        event.events = EPOLLIN | EPOLLRDHUP;
+
+    if(one_shot)
+        event.events |= EPOLLONESHOT; //EPOLLONESHOT：只监听一次事件
+    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+    setnonblocking(sockfd);
+}
+
+void Http::init(int connfd, struct sockaddr_in client_addr, char *root, int conn_mode, bool close_log,
+                            std::string sql_username, std::string sql_password, std::string sql_database)
+{
+    m_sockfd = connfd;
+    m_addr = client_addr;
+    m_root = root;
+    m_conn_mode = conn_mode;
+    m_close_log = close_log;
+    m_sql_username = sql_username;
+    m_sql_password = sql_password;
+    m_sql_database = sql_database;
+
+    addfd(m_epollfd, m_sockfd, true, m_conn_mode);
+    ++m_user_count;
+
+    init();
+}
+
+void Http::init()
+{
+    mysql = NULL;
+    bytes_to_send = 0;
+    bytes_have_send = 0;
+    m_check_state = CHECK_STATE_REQUESTLINE;
+    m_linger = false;
+    m_method = GET;
+    m_url = 0;
+    m_version = 0;
+    m_content_length = 0;
+    m_host = 0;
+    m_start_line = 0;
+    m_checked_idx = 0;
+    m_read_idx = 0;
+    m_write_idx = 0;
+    cgi = 0;
+    m_state = 0;
+    timer_flag = 0;
+    improv = 0;
+
+    memset(m_read_buf, '\0', READ_BUFFER_SIZE);
+    memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
+    memset(m_real_file, '\0', FILENAME_LEN);
+}
+
 void Http::init_mysqlresult(ConnSql *m_sql)
 {
     MYSQL *mysql = nullptr;
