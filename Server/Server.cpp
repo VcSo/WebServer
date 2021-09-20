@@ -333,7 +333,7 @@ void Server::dealwithread(int sockfd)
 
 void Server::adjust_timer(util_timer *timer)
 {
-    time_t cur = timer(NULL);
+    time_t cur = time(NULL);
     timer->expire = cur + 3 + TIMESLOT;
     utils.m_timer_lst.adjust_timer(timer);
 
