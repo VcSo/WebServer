@@ -37,7 +37,7 @@ void addfd(int epollfd, int sockfd, bool one_shot, int conn_mode)
 
     if(one_shot)
         event.events |= EPOLLONESHOT; //EPOLLONESHOT：只监听一次事件
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+    epoll_ctl(epollfd, EPOLL_CTL_ADD, sockfd, &event);
     setnonblocking(sockfd);
 }
 
@@ -117,4 +117,9 @@ void Http::init_mysqlresult(ConnSql *m_sql)
 bool Http::read_once()
 {
 
+}
+
+sockaddr_in * Http::get_address()
+{
+    return &m_addr;
 }

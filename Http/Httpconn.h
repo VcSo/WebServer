@@ -74,6 +74,7 @@ public:
 
     void init_mysqlresult(ConnSql *m_sql);
     bool read_once();
+    sockaddr_in * get_address();
 
 private:
     int m_sockfd;
