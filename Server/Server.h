@@ -22,19 +22,19 @@ public:
     Server(int port, std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
                    bool close_log, int lingermode, int et, int sql_threadnum, int threadnum, int actor_mode, int async);
 
-    void set_log(std::string path);
-    void setsql();
+    void Start();
     void threadpool();
     void trig_mode();
+    void setsql();
     void event_listen();
-    void Start();
-
+    void set_log(std::string path);
     void timer(int connfd, struct sockaddr_in client_addr);
+    void adjust_timer(util_timer *timer);
     void deal_timer(util_timer *timer, int sockfd);
+    void dealwithread(int sockfd);
 
     bool dealclientdata();
     bool dealwithsignal(bool& timeout, bool& stop_server);
-    void dealwithread(int sockfd);
 
 private:
     std::string m_localhost;

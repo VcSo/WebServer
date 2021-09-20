@@ -282,3 +282,60 @@ bool Server::dealwithsignal(bool &timeout, bool &stop_server)
     return true;
 
 }
+
+void Server::dealwithread(int sockfd)
+{
+    util_timer *timer = users_timer[sockfd].timer;
+
+    //reactor
+    if(m_actor_mode == 1)
+    {
+        if(timer)
+        {
+            adjust_timer(timer);
+        }
+
+        //若监测到读事件，将该事件放入请求队列
+        m_pool->append(Users + sockfd, 0);
+
+        while (true)
+        {
+            if (1 == Users[sockfd].improv)
+            {
+                if (1 == Users[sockfd].timer_flag)
+                {
+                    deal_timer(timer, sockfd);
+                    Users[sockfd].timer_flag = 0;
+                }
+                Users[sockfd].improv = 0;
+                break;
+            }
+        }
+    }
+    //proactor
+    if (Users[sockfd].read_once())
+    {
+        LOG_INFO("deal with the client(%s)", inet_ntoa(Users[sockfd].get_address()->sin_addr));
+
+        //若监测到读事件，将该事件放入请求队列
+        m_pool->append_p(Users + sockfd);
+
+        if (timer)
+        {
+            adjust_timer(timer);
+        }
+    }
+    else
+    {
+        deal_timer(timer, sockfd);
+    }
+}
+
+void Server::adjust_timer(util_timer *timer)
+{
+    time_t cur = timer(NULL);
+    timer->expire = cur + 3 + TIMESLOT;
+    utils.m_timer_lst.adjust_timer(timer);
+
+    LOG_INFO("%s", "adjust timer once");
+}
