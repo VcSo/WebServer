@@ -177,7 +177,7 @@ void Server::Start()
             }
             else if (events[i].events & EPOLLOUT)
             {
-
+                dealwithwrite(sockfd);
             }
         }
 
@@ -338,4 +338,51 @@ void Server::adjust_timer(util_timer *timer)
     utils.m_timer_lst.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
+
+}
+
+void Server::dealwithwrite(int sockfd)
+{
+    util_timer *timer = users_timer[sockfd].timer;
+
+    if (1 == m_actor_mode)
+    {
+        if (timer)
+        {
+            adjust_timer(timer);
+        }
+
+        m_pool->append(Users + sockfd, 1);
+
+        while (true)
+        {
+            if (1 == Users[sockfd].improv)
+            {
+                if (1 == Users[sockfd].timer_flag)
+                {
+                    deal_timer(timer, sockfd);
+                    Users[sockfd].timer_flag = 0;
+                }
+                Users[sockfd].improv = 0;
+                break;
+            }
+        }
+    }
+    else
+    {
+        //proactor
+        if (Users[sockfd].write())
+        {
+            LOG_INFO("send data to the client(%s)", inet_ntoa(Users[sockfd].get_address()->sin_addr));
+
+            if (timer)
+            {
+                adjust_timer(timer);
+            }
+        }
+        else
+        {
+            deal_timer(timer, sockfd);
+        }
+    }
 }

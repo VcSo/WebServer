@@ -32,6 +32,7 @@ public:
     void adjust_timer(util_timer *timer);
     void deal_timer(util_timer *timer, int sockfd);
     void dealwithread(int sockfd);
+    void dealwithwrite(int sockfd);
 
     bool dealclientdata();
     bool dealwithsignal(bool& timeout, bool& stop_server);
