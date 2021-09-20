@@ -71,9 +71,11 @@ public:
     void init(int connfd, struct sockaddr_in client_addr, char *root, int conn_mode, bool close_log,
                             std::string sql_username, std::string sql_password, std::string sql_database);
     void init();
-
     void init_mysqlresult(ConnSql *m_sql);
+
     bool read_once();
+    bool write();
+
     sockaddr_in * get_address();
 
 private:
