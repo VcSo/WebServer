@@ -166,56 +166,56 @@ bool Http::write()
 {
     int temp = 0;
 
-    if (bytes_to_send == 0)
-    {
-        modfd(m_epollfd, m_sockfd, EPOLLIN, m_conn_mode);
-        init();
-        return true;
-    }
-
-    while (1)
-    {
-        temp = writev(m_sockfd, m_iv, m_iv_count);
-
-        if (temp < 0)
-        {
-            if (errno == EAGAIN)
-            {
-                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_conn_mode);
-                return true;
-            }
-            unmap();
-            return false;
-        }
-
-        bytes_have_send += temp;
-        bytes_to_send -= temp;
-        if (bytes_have_send >= m_iv[0].iov_len)
-        {
-            m_iv[0].iov_len = 0;
-            m_iv[1].iov_base = m_file_address + (bytes_have_send - m_write_idx);
-            m_iv[1].iov_len = bytes_to_send;
-        }
-        else
-        {
-            m_iv[0].iov_base = m_write_buf + bytes_have_send;
-            m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
-        }
-
-        if (bytes_to_send <= 0)
-        {
-            unmap();
-            modfd(m_epollfd, m_sockfd, EPOLLIN, m_conn_mode);
-
-            if (m_linger)
-            {
-                init();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
+//    if (bytes_to_send == 0)
+//    {
+//        modfd(m_epollfd, m_sockfd, EPOLLIN, m_conn_mode);
+//        init();
+//        return true;
+//    }
+//
+//    while (1)
+//    {
+//        temp = writev(m_sockfd, m_iv, m_iv_count);
+//
+//        if (temp < 0)
+//        {
+//            if (errno == EAGAIN)
+//            {
+//                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_conn_mode);
+//                return true;
+//            }
+//            unmap();
+//            return false;
+//        }
+//
+//        bytes_have_send += temp;
+//        bytes_to_send -= temp;
+//        if (bytes_have_send >= m_iv[0].iov_len)
+//        {
+//            m_iv[0].iov_len = 0;
+//            m_iv[1].iov_base = m_file_address + (bytes_have_send - m_write_idx);
+//            m_iv[1].iov_len = bytes_to_send;
+//        }
+//        else
+//        {
+//            m_iv[0].iov_base = m_write_buf + bytes_have_send;
+//            m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
+//        }
+//
+//        if (bytes_to_send <= 0)
+//        {
+//            unmap();
+//            modfd(m_epollfd, m_sockfd, EPOLLIN, m_conn_mode);
+//
+//            if (m_linger)
+//            {
+//                init();
+//                return true;
+//            }
+//            else
+//            {
+//                return false;
+//            }
+//        }
+//    }
 }
