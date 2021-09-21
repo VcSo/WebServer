@@ -9,6 +9,9 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/uio.h>
+#include <sys/mman.h>
+#include <stdarg.h>
 
 #include "../Log/Log.h"
 #include "../Lock/Locker.h"
@@ -91,6 +94,7 @@ private:
     int bytes_to_send;
     int bytes_have_send;
     int m_content_length;
+    int m_iv_count;
 
     bool m_close_log;
     bool m_linger;
@@ -102,12 +106,15 @@ private:
     char *m_url;
     char *m_version;
     char *m_host;
+    char *m_file_address;
 
     std::string m_sql_username;
     std::string m_sql_password;
     std::string m_sql_database;
 
     struct sockaddr_in m_addr;
+    struct iovec m_iv[2];
+    struct stat m_file_stat;
 
     CHECK_STATE m_check_state;
     METHOD m_method;
