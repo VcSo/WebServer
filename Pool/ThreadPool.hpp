@@ -104,10 +104,9 @@ void ThreadPool<T>::run()
         {
             if(request->m_state == 0)
             {
-//                if(request->read_once())
-//                {
-//
-//                }
+                if(request->read_once())
+                {
+                }
             }
         }
     }
