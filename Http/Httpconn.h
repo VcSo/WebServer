@@ -12,6 +12,7 @@
 #include <sys/uio.h>
 #include <sys/mman.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
 #include "../Log/Log.h"
 #include "../Lock/Locker.h"
@@ -73,13 +74,23 @@ public:
 
     void init(int connfd, struct sockaddr_in client_addr, char *root, int conn_mode, bool close_log,
                             std::string sql_username, std::string sql_password, std::string sql_database);
-    void init();
     void init_mysqlresult(ConnSql *m_sql);
+    void process();
 
     bool read_once();
     bool write();
 
     sockaddr_in * get_address();
+
+private:
+    void init();
+    HTTP_CODE process_read();
+    LINE_STATUS parse_line();
+    HTTP_CODE parse_request_line(char *text);
+    char *get_line()
+    {
+        return m_read_buf + m_start_line;
+    };
 
 private:
     int m_sockfd;
