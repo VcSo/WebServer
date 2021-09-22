@@ -106,6 +106,9 @@ void ThreadPool<T>::run()
             {
                 if(request->read_once())
                 {
+                    request->improv = 1;
+                    connectionRAII mysqlcon(&request->mysql, m_sql);
+                    request->process();
                 }
             }
         }
