@@ -1,0 +1,30 @@
+GET / HTTP/1.1
+Host: baidu.com
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Cookie: BAIDUID=B0B9909DC0A:FG=1; BIDUPSID=6886F16232ADE2; PSTM=1769
+Upgrade-Insecure-Requests: 1
+
+HTTP/1.1 302 Moved Temporarily
+Server: bfe/1.0.8.18
+Date: Wed, 26 Aug 2020 06:17:01 GMT
+Content-Type: text/html
+Content-Length: 161
+Connection: Keep-Alive
+Location: https://www.baidu.com/
+Expires: Thu, 27 Aug 2020 06:17:01 GMT
+Cache-Control: max-age=86400
+Cache-Control: privae
+
+<html>
+<head><title>302 Found</title></head>
+<body bgcolor="white">
+<center><h1>302 Found</h1></center>
+<hr><center>bfe/1.0.8.18</center>
+</body>
+</html>
+
+----
