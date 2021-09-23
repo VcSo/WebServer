@@ -84,13 +84,22 @@ public:
 
 private:
     void init();
-    HTTP_CODE process_read();
+
+    bool process_write(HTTP_CODE ret);
+    bool add_status_line(int status, const char *title);
+    bool add_response(const char *format, ...);
+    bool add_headers(int content_length);
+    bool add_content_length(int content_length);
+    bool add_linger();
+    bool add_blank_line();
+
     LINE_STATUS parse_line();
+    HTTP_CODE process_read();
     HTTP_CODE parse_request_line(char *text);
-    char *get_line()
-    {
-        return m_read_buf + m_start_line;
-    };
+    HTTP_CODE parse_headers(char *text);
+    HTTP_CODE parse_content(char *text);
+
+    char *get_line() { return m_read_buf + m_start_line; };
 
 private:
     int m_sockfd;
@@ -113,11 +122,13 @@ private:
     char m_read_buf[READ_BUFFER_SIZE];
     char m_write_buf[WRITE_BUFFER_SIZE];
     char m_real_file[FILENAME_LEN];
+
     char *m_root;
     char *m_url;
     char *m_version;
     char *m_host;
     char *m_file_address;
+    char *m_string; //存储请求头数据
 
     std::string m_sql_username;
     std::string m_sql_password;

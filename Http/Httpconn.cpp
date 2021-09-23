@@ -234,22 +234,35 @@ bool Http::write()
 void Http::process()
 {
     HTTP_CODE read_ret = process_read();
+    if (read_ret == NO_REQUEST)
+    {
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+        return;
+    }
+
+    bool write_ret = process_write(read_ret);
+    if (!write_ret)
+    {
+        close_conn();
+    }
+
+    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
 }
 
-void Http::process_read()
+Http::HTTP_CODE Http::process_read()
 {
     LINE_STATUS line_status = LINE_OK;
     HTTP_CODE ret = NO_REQUEST;
-    char *text = 0;
+    char *text = nullptr;
 
-    while ((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || ((line_status = parse_line()) == LINE_OK))
+    while((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || (line_status = parse_line()) == LINE_OK)
     {
         text = get_line();
         m_start_line = m_checked_idx;
         LOG_INFO("%s", text);
-        switch(m_check_state)
+        switch (m_check_state)
         {
-            case CHECK_STATE_REQUESTLINE:
+            case CHECK_STATE_REQUESTLINE: //解析请求行
             {
                 ret = parse_request_line(text);
                 if (ret == BAD_REQUEST)
@@ -279,70 +292,112 @@ void Http::process_read()
                 return INTERNAL_ERROR;
         }
     }
-    return NO_REQUEST;
+
 }
 
-LINE_STATUS Http::parse_line()
+bool Http::process_write(Http::HTTP_CODE ret)
 {
-    char temp;
-    for (; m_checked_idx < m_read_idx; ++m_checked_idx)
+    switch(ret)
     {
-        temp = m_read_buf[m_checked_idx];
-
-        if (temp == '\r')
+        case INTERNAL_ERROR:
         {
-            if ((m_checked_idx + 1) == m_read_idx)
-                return LINE_OPEN;
-            else if (m_read_buf[m_checked_idx + 1] == '\n')
-            {
-                m_read_buf[m_checked_idx++] = '\0';
-                m_read_buf[m_checked_idx++] = '\0';
-                return LINE_OK;
-            }
-            return LINE_BAD;
-        }
-        else if (temp == '\n')
-        {
-            if (m_checked_idx > 1 && m_read_buf[m_checked_idx - 1] == '\r')
-            {
-                m_read_buf[m_checked_idx - 1] = '\0';
-                m_read_buf[m_checked_idx++] = '\0';
-                return LINE_OK;
-            }
-            return LINE_BAD;
+            add_status_line(500, error_500_title);
+            add_headers(strlen(error_500_form));
+            if (!add_content(error_500_form))
+                return false;
+            break;
         }
     }
 
-    return LINE_OPEN;
 }
 
-//解析http请求行，获得请求方法，目标url及http版本号
-HTTP_CODE Http::parse_request_line(char *text)
+Http::HTTP_CODE Http::parse_content(char *text)
+{
+    if(m_read_idx >= (m_content_length + m_checked_idx))
+    {
+        text[m_content_length] = '\0';
+        //POST请求中最后为输入的用户名和密码
+        m_string = text;
+        return GET_REQUEST;
+    }
+
+    return NO_REQUEST;
+}
+
+Http::HTTP_CODE Http::parse_headers(char *text)
+{
+    if (text[0] == '\0')
+    {
+        if (m_content_length != 0)
+        {
+            m_check_state = CHECK_STATE_CONTENT;
+            return NO_REQUEST;
+        }
+        return GET_REQUEST;
+    }
+    else if (strncasecmp(text, "Connection:", 11) == 0)
+    {
+        text += 11;
+        text += strspn(text, " \t");
+        if (strcasecmp(text, "keep-alive") == 0)
+        {
+            m_linger = true;
+        }
+    }
+    else if (strncasecmp(text, "Content-length:", 15) == 0)
+    {
+        text += 15;
+        text += strspn(text, " \t");
+        m_content_length = atol(text);
+    }
+    else if (strncasecmp(text, "Host:", 5) == 0)
+    {
+        text += 5;
+        text += strspn(text, " \t");
+        m_host = text;
+    }
+    else
+    {
+        LOG_INFO("oop!unknow header: %s", text);
+    }
+    return NO_REQUEST;
+}
+
+Http::HTTP_CODE parse_request_line(char *text)
 {
     m_url = strpbrk(text, " \t");
     if (!m_url)
     {
         return BAD_REQUEST;
     }
+
     *m_url++ = '\0';
     char *method = text;
+
     if (strcasecmp(method, "GET") == 0)
+    {
         m_method = GET;
-    else if (strcasecmp(method, "POST") == 0)
+    }
+    else if(strcasecmp(method, "POST") == 0)
     {
         m_method = POST;
         cgi = 1;
     }
     else
         return BAD_REQUEST;
+
     m_url += strspn(m_url, " \t");
     m_version = strpbrk(m_url, " \t");
+
     if (!m_version)
         return BAD_REQUEST;
+
     *m_version++ = '\0';
     m_version += strspn(m_version, " \t");
+
     if (strcasecmp(m_version, "HTTP/1.1") != 0)
         return BAD_REQUEST;
+
     if (strncasecmp(m_url, "http://", 7) == 0)
     {
         m_url += 7;
@@ -362,4 +417,87 @@ HTTP_CODE Http::parse_request_line(char *text)
         strcat(m_url, "judge.html");
     m_check_state = CHECK_STATE_HEADER;
     return NO_REQUEST;
+}
+
+Http::LINE_STATUS Http::parse_line()
+{
+    char temp = nullptr;
+    for(; m_checked_idx < m_read_idx; ++m_checked_idx)
+    {
+        temp = m_read_buf[m_checked_idx];
+        if(temp == '\r')
+        {
+            if((m_checked_idx + 1) == m_read_idx)
+            {
+                return LINE_OPEN;
+            }
+            else if(m_read_buf[m_checked_idx + 1] == '\n')
+            {
+                m_read_buf[m_checked_idx++] = '\0';
+                m_read_buf[m_checked_idx++] = '\0';
+                return LINE_OK;
+            }
+            return LINE_BAD;
+        }
+        else if(temp == '\n')
+        {
+            if (m_checked_idx > 1 && m_read_buf[m_checked_idx - 1] == '\r')
+            {
+                m_read_buf[m_checked_idx - 1] = '\0';
+                m_read_buf[m_checked_idx++] = '\0';
+                return LINE_OK;
+            }
+            return LINE_BAD;
+        }
+    }
+
+    return LINE_OPEN;
+}
+
+bool Http::add_status_line(int status, const char *title)
+{
+    return add_response("%s %d %s\r\n", "HTTP/1.1", status, title);
+}
+
+bool Http::add_response(const char *format, ...)
+{
+    if (m_write_idx >= WRITE_BUFFER_SIZE)
+        return false;
+
+    va_list arg_list;
+    va_start(arg_list, format);
+    int len = vsnprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - 1 - m_write_idx, format, arg_list);
+    if (len >= (WRITE_BUFFER_SIZE - 1 - m_write_idx))
+    {
+        va_end(arg_list);
+        return false;
+    }
+
+    m_write_idx += len;
+    va_end(arg_list);
+
+    LOG_INFO("request:%s", m_write_buf);
+
+    return true;
+}
+
+bool Http::add_headers(int content_len)
+{
+    return add_content_length(content_len) && add_linger() &&
+           add_blank_line();
+}
+
+bool Http::add_content_length(int content_length)
+{
+    return add_response("Content-Length:%d\r\n", content_len);
+}
+
+bool Http::add_linger()
+{
+    return add_response("Connection:%s\r\n", (m_linger == true) ? "keep-alive" : "close");
+}
+
+bool Http::add_blank_line()
+{
+    return add_response("%s", "\r\n");
 }
