@@ -76,6 +76,7 @@ public:
                             std::string sql_username, std::string sql_password, std::string sql_database);
     void init_mysqlresult(ConnSql *m_sql);
     void process();
+    void close_conn(bool real_close = true);
 
     bool read_once();
     bool write();
@@ -84,6 +85,7 @@ public:
 
 private:
     void init();
+    void unmap();
 
     bool process_write(HTTP_CODE ret);
     bool add_status_line(int status, const char *title);
@@ -92,12 +94,14 @@ private:
     bool add_content_length(int content_length);
     bool add_linger();
     bool add_blank_line();
+    bool add_content(const char *content);
 
     LINE_STATUS parse_line();
     HTTP_CODE process_read();
     HTTP_CODE parse_request_line(char *text);
     HTTP_CODE parse_headers(char *text);
     HTTP_CODE parse_content(char *text);
+    HTTP_CODE do_request();
 
     char *get_line() { return m_read_buf + m_start_line; };
 
