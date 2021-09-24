@@ -21,7 +21,7 @@ Server::Server(int port, std::string localhost, std::string sql_username, std::s
     strcat(m_root, root);
 
     Users = new Http[MAX_FD];
-
+    users_timer = new client_data[MAX_FD];
 }
 
 void Server::set_log(std::string path)
@@ -140,8 +140,9 @@ void Server::Start()
     while(!stop_server)
     {
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
+        std::cout << "number: " << number << std::endl;
 
-        if(number < 0 || errno != EINTR)
+        if(number < 0 && errno != EINTR)
         {
             LOG_ERROR("%s", "epoll failure");
             break;
@@ -149,38 +150,50 @@ void Server::Start()
 
         for(int i = 0; i < number; ++i)
         {
+            std::cout << "line: " << __LINE__ << std::endl;
             int sockfd = events[i].data.fd;
 
             if(sockfd == m_listenfd)
             {
+                std::cout << "line: " << __LINE__ << std::endl;
                 bool flag = dealclientdata();
                 if(flag == false)
                 {
                     continue;
                 }
+                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
+                std::cout << "line: " << __LINE__ << std::endl;
                 //服务器端关闭连接，移除对应的定时器
                 util_timer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
+                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) //处理信号
             {
+                std::cout << "line: " << __LINE__ << std::endl;
                 bool flag = dealwithsignal(timeout, stop_server);
                 if (flag == false)
                     LOG_ERROR("%s", "dealclientdata failure");
+                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if (events[i].events & EPOLLIN)
             {
+                std::cout << "line: " << __LINE__ << std::endl;
                 dealwithread(sockfd);
+                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if (events[i].events & EPOLLOUT)
             {
+                std::cout << "line: " << __LINE__ << std::endl;
                 dealwithwrite(sockfd);
+                std::cout << "line: " << __LINE__ << std::endl;
             }
         }
 
+        std::cout << "line: " << __LINE__ << std::endl;
         if (timeout)
         {
             utils.timer_handler();
@@ -189,6 +202,7 @@ void Server::Start()
 
             timeout = false;
         }
+        std::cout << "line: " << __LINE__ << std::endl;
     }
 
 }
@@ -200,6 +214,7 @@ bool Server::dealclientdata()
 
     if(m_listen_mode == 0)
     {
+        std::cout << "line: " << __LINE__ << std::endl;
         int connfd = accept(m_listenfd, (struct sockaddr*) &client_addr, &client_addr_len);
         if(connfd < 0)
         {
@@ -207,15 +222,44 @@ bool Server::dealclientdata()
             return false;
         }
 
+        std::cout << "line: " << __LINE__ << std::endl;
         if(Http::m_user_count >= MAX_FD)
         {
             utils.show_error(connfd, "Internal server busy");
             LOG_ERROR("%s", "Internal server busy");
             return false;
         }
+        std::cout << "line: " << __LINE__ << std::endl;
 
         timer(connfd, client_addr);
+        std::cout << "line: " << __LINE__ << std::endl;
     }
+    else
+    {
+        while (1)
+        {
+            std::cout << "line: " << __LINE__ << std::endl;
+            int connfd = accept(m_listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
+            if (connfd < 0)
+            {
+                LOG_ERROR("%s:errno is:%d", "accept error", errno);
+                break;
+            }
+            std::cout << "line: " << __LINE__ << std::endl;
+            if (Http::m_user_count >= MAX_FD)
+            {
+                utils.show_error(connfd, "Internal server busy");
+                LOG_ERROR("%s", "Internal server busy");
+                break;
+            }
+            timer(connfd, client_addr);
+            std::cout << "line: " << __LINE__ << std::endl;
+        }
+        std::cout << "line: " << __LINE__ << std::endl;
+        return false;
+    }
+    std::cout << "line: " << __LINE__ << std::endl;
+    return true;
 }
 
 void Server::timer(int connfd, struct sockaddr_in client_addr)
@@ -285,21 +329,26 @@ bool Server::dealwithsignal(bool &timeout, bool &stop_server)
 
 void Server::dealwithread(int sockfd)
 {
+    std::cout << "line: " << __LINE__ << std::endl;
     util_timer *timer = users_timer[sockfd].timer;
 
     //reactor
     if(m_actor_mode == 1)
     {
+        std::cout << "line: " << __LINE__ << std::endl;
         if(timer)
         {
+            std::cout << "line: " << __LINE__ << std::endl;
             adjust_timer(timer);
         }
 
+        std::cout << "line: " << __LINE__ << std::endl;
         //若监测到读事件，将该事件放入请求队列
         m_pool->append(Users + sockfd, 0);
 
         while (true)
         {
+            std::cout << "line: " << __LINE__ << std::endl;
             if (1 == Users[sockfd].improv)
             {
                 if (1 == Users[sockfd].timer_flag)
@@ -312,22 +361,25 @@ void Server::dealwithread(int sockfd)
             }
         }
     }
-    //proactor
-    if (Users[sockfd].read_once())
-    {
-        LOG_INFO("deal with the client(%s)", inet_ntoa(Users[sockfd].get_address()->sin_addr));
-
-        //若监测到读事件，将该事件放入请求队列
-        m_pool->append_p(Users + sockfd);
-
-        if (timer)
-        {
-            adjust_timer(timer);
-        }
-    }
     else
     {
-        deal_timer(timer, sockfd);
+        //proactor
+        if (Users[sockfd].read_once())
+        {
+            LOG_INFO("deal with the client(%s)", inet_ntoa(Users[sockfd].get_address()->sin_addr));
+
+            //若监测到读事件，将该事件放入请求队列
+            m_pool->append_p(Users + sockfd);
+
+            if (timer)
+            {
+                adjust_timer(timer);
+            }
+        }
+        else
+        {
+            deal_timer(timer, sockfd);
+        }
     }
 }
 
