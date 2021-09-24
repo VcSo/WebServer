@@ -110,7 +110,30 @@ void ThreadPool<T>::run()
                     connectionRAII mysqlcon(&request->mysql, m_sql);
                     request->process();
                 }
+                else
+                {
+                    request->improv = 1;
+                    request->timer_flag = 1;
+                }
             }
+            else
+            {
+                if (request->write())
+                {
+                    request->improv = 1;
+                }
+                else
+                {
+                    request->improv = 1;
+                    request->timer_flag = 1;
+                }
+            }
+
+        }
+        else
+        {
+            connectionRAII mysqlcon(&request->mysql, m_sql);
+            request->process();
         }
     }
 }
@@ -134,13 +157,17 @@ bool ThreadPool<T>::append(T *request, int state)
 template <typename T>
 bool ThreadPool<T>::append_p(T *request)
 {
+    std::cout << "line: " << __LINE__ << std::endl;
     m_mutex.lock();
+    std::cout << "queue_size = " << m_work_queue.size() << std::endl;
     if(m_work_queue.size() >= m_max_request)
     {
+        std::cout << "line: " << __LINE__ << std::endl;
         m_mutex.unlock();
         return false;
     }
 
+    std::cout << "line: " << __LINE__ << std::endl;
     m_work_queue.push(request);
     m_mutex.unlock();
     m_sem.post();
