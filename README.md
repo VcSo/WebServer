@@ -5,7 +5,7 @@
 C++ WebServer
 
 ```
-项目未完成 边理解边写的 
+边理解边写 项目目前已正常运行  
 ```
 
 使用线程池+非阻塞socket+epoll(LT/ET)+Reactor/Proactor高并发模型
