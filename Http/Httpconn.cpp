@@ -141,7 +141,6 @@ void Http::init_mysqlresult(ConnSql *m_sql)
 
 bool Http::read_once()
 {
-    std::cout << m_read_idx << "   " << READ_BUFFER_SIZE << std::endl;
     if (m_read_idx >= READ_BUFFER_SIZE)
     {
         return false;
