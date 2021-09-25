@@ -140,7 +140,6 @@ void Server::Start()
     while(!stop_server)
     {
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
-        std::cout << "number: " << number << std::endl;
 
         if(number < 0 && errno != EINTR)
         {
@@ -315,7 +314,6 @@ void Server::dealwithread(int sockfd)
     util_timer *timer = users_timer[sockfd].timer;
 
     //reactor
-    std::cout << "m_actor: " << m_actor_mode << std::endl;
     if(m_actor_mode == 1)
     {
         if(timer)
