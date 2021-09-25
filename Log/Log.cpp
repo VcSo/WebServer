@@ -64,7 +64,7 @@ bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, 
     return true;
 }
 
-void *Log::flush_log_threaad(void *args)
+void * Log::flush_log_threaad(void *args)
 {
     Log::get_instance()->async_write_log();
 }
