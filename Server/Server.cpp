@@ -150,50 +150,43 @@ void Server::Start()
 
         for(int i = 0; i < number; ++i)
         {
-            std::cout << "line: " << __LINE__ << std::endl;
             int sockfd = events[i].data.fd;
 
             if(sockfd == m_listenfd)
             {
-                std::cout << "line: " << __LINE__ << std::endl;
+                std::cout << "dealclientdata()" << std::endl;
                 bool flag = dealclientdata();
                 if(flag == false)
                 {
                     continue;
                 }
-                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
-                std::cout << "line: " << __LINE__ << std::endl;
+                std::cout << "deal_timer()" << std::endl;
                 //服务器端关闭连接，移除对应的定时器
                 util_timer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
-                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) //处理信号
             {
-                std::cout << "line: " << __LINE__ << std::endl;
+                std::cout << "dealwithsignal()" << std::endl;
                 bool flag = dealwithsignal(timeout, stop_server);
                 if (flag == false)
                     LOG_ERROR("%s", "dealclientdata failure");
-                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if (events[i].events & EPOLLIN)
             {
-                std::cout << "line: " << __LINE__ << std::endl;
+                std::cout << "dealwithread()" << std::endl;
                 dealwithread(sockfd);
-                std::cout << "line: " << __LINE__ << std::endl;
             }
             else if (events[i].events & EPOLLOUT)
             {
-                std::cout << "line: " << __LINE__ << std::endl;
+                std::cout << "dealwithwrite()" << std::endl;
                 dealwithwrite(sockfd);
-                std::cout << "line: " << __LINE__ << std::endl;
             }
         }
 
-        std::cout << "line: " << __LINE__ << std::endl;
         if (timeout)
         {
             utils.timer_handler();
@@ -202,7 +195,6 @@ void Server::Start()
 
             timeout = false;
         }
-        std::cout << "line: " << __LINE__ << std::endl;
     }
 
 }
@@ -214,7 +206,6 @@ bool Server::dealclientdata()
 
     if(m_listen_mode == 0)
     {
-        std::cout << "line: " << __LINE__ << std::endl;
         int connfd = accept(m_listenfd, (struct sockaddr*) &client_addr, &client_addr_len);
         if(connfd < 0)
         {
@@ -222,30 +213,25 @@ bool Server::dealclientdata()
             return false;
         }
 
-        std::cout << "line: " << __LINE__ << std::endl;
         if(Http::m_user_count >= MAX_FD)
         {
             utils.show_error(connfd, "Internal server busy");
             LOG_ERROR("%s", "Internal server busy");
             return false;
         }
-        std::cout << "line: " << __LINE__ << std::endl;
 
         timer(connfd, client_addr);
-        std::cout << "line: " << __LINE__ << std::endl;
     }
     else
     {
         while (1)
         {
-            std::cout << "line: " << __LINE__ << std::endl;
             int connfd = accept(m_listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
             if (connfd < 0)
             {
                 LOG_ERROR("%s:errno is:%d", "accept error", errno);
                 break;
             }
-            std::cout << "line: " << __LINE__ << std::endl;
             if (Http::m_user_count >= MAX_FD)
             {
                 utils.show_error(connfd, "Internal server busy");
@@ -253,12 +239,9 @@ bool Server::dealclientdata()
                 break;
             }
             timer(connfd, client_addr);
-            std::cout << "line: " << __LINE__ << std::endl;
         }
-        std::cout << "line: " << __LINE__ << std::endl;
         return false;
     }
-    std::cout << "line: " << __LINE__ << std::endl;
     return true;
 }
 
@@ -293,7 +276,7 @@ void Server::deal_timer(util_timer *timer, int sockfd)
 bool Server::dealwithsignal(bool &timeout, bool &stop_server)
 {
     int ret = 0;
-    int sig;
+    int sig = 0;
     char signals[1024];
     ret = recv(m_pipefd[0], signals, sizeof(signals), 0);
     if (ret == -1)
@@ -329,26 +312,22 @@ bool Server::dealwithsignal(bool &timeout, bool &stop_server)
 
 void Server::dealwithread(int sockfd)
 {
-    std::cout << "line: " << __LINE__ << std::endl;
     util_timer *timer = users_timer[sockfd].timer;
 
     //reactor
+    std::cout << "m_actor: " << m_actor_mode << std::endl;
     if(m_actor_mode == 1)
     {
-        std::cout << "line: " << __LINE__ << std::endl;
         if(timer)
         {
-            std::cout << "line: " << __LINE__ << std::endl;
             adjust_timer(timer);
         }
 
-        std::cout << "line: " << __LINE__ << std::endl;
         //若监测到读事件，将该事件放入请求队列
         m_pool->append(Users + sockfd, 0);
 
         while (true)
         {
-            std::cout << "line: " << __LINE__ << std::endl;
             if (1 == Users[sockfd].improv)
             {
                 if (1 == Users[sockfd].timer_flag)
