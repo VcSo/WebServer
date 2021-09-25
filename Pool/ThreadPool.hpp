@@ -1,7 +1,6 @@
 #ifndef ThreadPool_H
 #define ThreadPool_H
 
-#include <signal.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -85,6 +84,7 @@ void ThreadPool<T>::run()
 {
     while(true)
     {
+        std::cout << "filename: " << __FILE__ << " line: " << __LINE__ << std::endl;
         m_sem.wait();
         m_mutex.lock();
         if(m_work_queue.empty())
@@ -95,6 +95,7 @@ void ThreadPool<T>::run()
 
         T *request = m_work_queue.front();
         m_work_queue.pop();
+        m_mutex.unlock();
         if(!request)
         {
             continue;
@@ -157,17 +158,13 @@ bool ThreadPool<T>::append(T *request, int state)
 template <typename T>
 bool ThreadPool<T>::append_p(T *request)
 {
-    std::cout << "line: " << __LINE__ << std::endl;
     m_mutex.lock();
-    std::cout << "queue_size = " << m_work_queue.size() << std::endl;
     if(m_work_queue.size() >= m_max_request)
     {
-        std::cout << "line: " << __LINE__ << std::endl;
         m_mutex.unlock();
         return false;
     }
 
-    std::cout << "line: " << __LINE__ << std::endl;
     m_work_queue.push(request);
     m_mutex.unlock();
     m_sem.post();
