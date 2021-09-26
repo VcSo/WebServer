@@ -5,7 +5,8 @@
 C++ WebServer
 
 ```
-边理解边写 项目目前已正常运行  
+边理解边写 项目目前已正常运行  http部分还没吃透 
+压力测试 入门云服务器 1000并发 60秒 稳定
 ```
 
 使用线程池+非阻塞socket+epoll(LT/ET)+Reactor/Proactor高并发模型
