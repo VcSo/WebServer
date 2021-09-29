@@ -3,7 +3,6 @@
 
 #include <mysql/mysql.h>
 #include <list>
-#include <string>
 
 #include "../Log/Log.h"
 
