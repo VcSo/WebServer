@@ -473,7 +473,7 @@ Http::HTTP_CODE Http::parse_request_line(char *text)
         return Http::BAD_REQUEST;
     //当url为/时，显示判断界面
     if (strlen(m_url) == 1)
-        strcat(m_url, "judge.html");
+        strcat(m_url, "index.html");
     m_check_state = CHECK_STATE_HEADER;
     return Http::NO_REQUEST;
 }
