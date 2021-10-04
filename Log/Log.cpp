@@ -80,7 +80,7 @@ void* Log::async_write_log()
     }
 }
 
-int file_num = 0;
+static int file_num = 0;
 char *setlogname()
 {
     std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -137,6 +137,7 @@ void Log::write_log(int level, const char *format, ...)
         writelog.close();
         if(m_today != my_tm.tm_mday)
         {
+            file_num = 0;
             char *new_log;
             new_log = setlogname();
             writelog.open(new_log, std::ios::binary);
