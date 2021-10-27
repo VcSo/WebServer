@@ -93,7 +93,15 @@ void Server::event_listen()
     address.sin_addr.s_addr = htonl(INADDR_ANY);
 
     int reuse = 1;
-    setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    if(setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1)
+    {
+        LOG_ERROR("setsockopt SO_REUSEADDR error");
+    }
+    //https://www.zhihu.com/question/42308970/answer/246334766
+    if(setsockopt(m_listenfd, IPPROTO_TCP, TCP_NODELAY, (char*)&reuse, int(sizeof(int))) == -1)
+    {
+        LOG_ERROR("setsockopt TCP_NODELAY error");
+    }
 
     ret = bind(m_listenfd, (struct sockaddr*) &address, sizeof(address));
     assert(ret >= 0);
@@ -102,6 +110,7 @@ void Server::event_listen()
 
     utils.init(TIMESLOT);
 
+    epoll_event events[MAX_EVENT_NUMBER];
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
 
@@ -126,12 +135,13 @@ void Server::event_listen()
 
 void Server::Start()
 {
-    bool timeout = true;
+    bool timeout = false;
     bool stop_server = false;
 
     while(!stop_server)
     {
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
+        std::cout << "number: " << number << std::endl;
 
         if(number < 0 && errno != EINTR)
         {
@@ -218,6 +228,7 @@ bool Server::dealclientdata()
         while (1)
         {
             int connfd = accept(m_listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
+            std::cout << "connfd: " << connfd << std::endl;
             if (connfd < 0)
             {
                 LOG_ERROR("%s:errno is:%d", "accept error", errno);
@@ -359,7 +370,6 @@ void Server::adjust_timer(util_timer *timer)
     utils.m_timer_lst.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
-
 }
 
 void Server::dealwithwrite(int sockfd)
