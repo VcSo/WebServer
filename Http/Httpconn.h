@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/mman.h>
+#include <netinet/tcp.h>
 #include <stdarg.h>
 #include <sys/stat.h>
 
