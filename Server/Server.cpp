@@ -141,7 +141,6 @@ void Server::Start()
     while(!stop_server)
     {
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
-        std::cout << "number: " << number << std::endl;
 
         if(number < 0 && errno != EINTR)
         {
@@ -316,6 +315,7 @@ void Server::dealwithread(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
 
+
     //reactor
     if(m_actor_mode == 1)
     {
@@ -324,11 +324,11 @@ void Server::dealwithread(int sockfd)
             adjust_timer(timer);
         }
 
-        //若监测到读事件，将该事件放入请求队列
         m_pool->append(Users + sockfd, 0);
 
-        while (true)
+        while(true)
         {
+            //cout << "Anything" << std::endl;
             if (1 == Users[sockfd].improv)
             {
                 if (1 == Users[sockfd].timer_flag)
