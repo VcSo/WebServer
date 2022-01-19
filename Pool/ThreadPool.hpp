@@ -39,8 +39,6 @@ private:
 
 #endif
 
-#include <iostream>
-
 template <typename T>
 ThreadPool<T>::ThreadPool(int actor, ConnSql *sql, int threadnum, int max_request) : m_actor(actor), m_sql(sql), m_threadnum(threadnum), m_max_request(max_request), m_threads(nullptr)
 {
@@ -84,7 +82,6 @@ void ThreadPool<T>::run()
 {
     while(true)
     {
-        std::cout << "filename: " << __FILE__ << " line: " << __LINE__ << std::endl;
         m_sem.wait();
         m_mutex.lock();
         if(m_work_queue.empty())
