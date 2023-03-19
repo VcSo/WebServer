@@ -25,7 +25,6 @@ int main(int argc, char **argv)
     server.event_listen();
     server.Start();
 
-    sleep(3);
     std::cout << "Server close" << std::endl;
 
     return 0;
