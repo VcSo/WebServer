@@ -1,5 +1,5 @@
 # WebServer
 
-![https://img.shields.io/github/workflow/status/VcSpace/WebServer/webserverci](https://img.shields.io/github/workflow/status/VcSpace/WebServer/webserverci)
+![server](https://img.shields.io/github/actions/workflow/status/VcSpace/WebServer/c-cpp.yml?branch=main)
 
 C++ WebServer
