@@ -4,6 +4,7 @@ project(serverone)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 11)
+add_compile_options(-std=c++11 -W -Wall)
 
 include_directories(
         Server
