@@ -30,7 +30,7 @@ insert into user(uid, username,password,create_time) values(1,'123','456',now())
 
 ```
 mkdir build && cd build
-cp -r ../resources ./build
+cp -r ../resources ./
 cmake ..
 make
 ```
