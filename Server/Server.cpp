@@ -15,7 +15,7 @@ Server::Server(int port, std::string localhost, std::string sql_username, std::s
 {
     char server_path[256];
     getcwd(server_path, 256);
-    char root[] = "/root";
+    char root[] = "/resources";
     m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
     strcat(m_root, root);
@@ -190,9 +190,7 @@ void Server::Start()
         if (timeout)
         {
             utils.timer_handler();
-
             LOG_INFO("%s", "timer tick");
-
             timeout = false;
         }
     }
