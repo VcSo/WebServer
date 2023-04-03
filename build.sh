@@ -1,6 +1,6 @@
 #!/bin/bash
-mkdir build && cd build
-cp -r ../resources/ ./
+mkdir build && cp -r ./resources/ ./build
+cd build
 cmake ..
 make -j4
 ./serverone
