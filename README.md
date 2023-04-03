@@ -29,8 +29,9 @@ insert into user(uid, username,password,create_time) values(1,'123','456',now())
 ## build
 
 ```
-mkdir build && cd build
-cp -r ../resources ./
+mkdir build && cp -r ./resources/ ./build
+cd build
 cmake ..
-make
+make -j4
+./serverone
 ```
