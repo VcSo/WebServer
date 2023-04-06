@@ -69,6 +69,16 @@ ThreadPool<T>::ThreadPool(int actor, ConnSql *sql, int threadnum, int max_reques
     }
 }
 
+template<typename T>
+ThreadPool<T>::~ThreadPool()
+{
+    delete []m_threads;
+    for(int i = m_threadnum; i < m_threadnum + 1; --i)
+    {
+    }
+
+}
+
 template <typename T>
 void * ThreadPool<T>::worker(void *arg)
 {
