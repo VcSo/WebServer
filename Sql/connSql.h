@@ -19,7 +19,7 @@ public:
     void ReleaseConnection(MYSQL *con); //释放连接
 
 private:
-    ConnSql();
+    ConnSql(); //单例模式，只允许创建一个对象，不允许外部创建对象
     ~ConnSql();
 
     std::string m_sql_username;
