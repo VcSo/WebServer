@@ -16,6 +16,9 @@ Log::~Log()
     {
         writelog.close();
     }
+
+    delete m_log_que;
+    delete []m_buf;
 }
 
 Log *Log::get_instance()
