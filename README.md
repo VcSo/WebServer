@@ -34,4 +34,7 @@ cd build
 cmake ..
 make -j4
 ./serverone
+#./serverone -i ip -p port -u sql_username -w sql_password -d sql_database -g use_log -l linger -e et -s sql_threadnnum -t threadnum -a actor -c async
+#./serverone -i 127.0.0.1 -p 20999 -u root -w 123456 -d serverm ...
 ```
+insert into user(username,password,create_time) values('ttt','111111', now());
