@@ -5,11 +5,16 @@ Server::Server()
 
 }
 
-Server::~Server() {}
+Server::~Server() {
+    delete m_pool;
+    delete []Users;
+    delete []users_timer;
+    free(m_root);
+}
 
-Server::Server(int port, std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
+Server::Server(std::string ip, int port, std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
                     bool close_log, int lingermode, int et, int sql_threadnum, int threadnum, int actor_mode, int async)
-                    : m_port(port), m_localhost(localhost), m_sql_username(sql_username), m_sql_password(sql_password), m_sql_database(sql_database),
+                    : m_ip(ip), m_port(port), m_localhost(localhost), m_sql_username(sql_username), m_sql_password(sql_password), m_sql_database(sql_database),
                     m_close_log(close_log), m_lingermode(lingermode), m_et(et), m_sqlthreadnum(sql_threadnum), m_threadnum(threadnum), m_actor_mode(actor_mode), m_async(async)
 
 {
@@ -30,7 +35,7 @@ void Server::set_log(std::string path)
     {
         if(m_async == 1)
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 800000, 800);
+            Log::get_instance()->init(path, m_close_log, 2000, 80, 800);
         }
         else
         {
@@ -90,7 +95,14 @@ void Server::event_listen()
     bzero(&address, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_port = htons(m_port);
-    address.sin_addr.s_addr = htonl(INADDR_ANY);
+    if(m_ip == "")
+    {
+        address.sin_addr.s_addr = htonl(INADDR_ANY);
+    }
+    else
+    {
+        address.sin_addr.s_addr = inet_addr(m_ip.c_str());
+    }
 
     int reuse = 1;
     if(setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1)
@@ -326,7 +338,6 @@ void Server::dealwithread(int sockfd)
 
         while(true)
         {
-            //cout << "Anything" << std::endl;
             if (1 == Users[sockfd].improv)
             {
                 if (1 == Users[sockfd].timer_flag)
