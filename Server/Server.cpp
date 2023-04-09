@@ -55,6 +55,7 @@ void Server::setsql()
 void Server::threadpool()
 {
     m_pool = new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum);
+//    m_pool = std::make_unique<ThreadPool<Http>>(m_actor_mode, m_sql, m_threadnum);
 }
 
 void Server::trig_mode()
@@ -87,7 +88,7 @@ void Server::event_listen()
     m_listenfd = socket(AF_INET, SOCK_STREAM, 0);
     assert(m_listenfd >= 0);
 
-    struct linger tmp = {m_lingermode, 1};
+    struct linger tmp = {m_lingermode, 1}; ///* 优雅关闭: 直到所剩数据发送完毕或超时 */
     setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
 
     int ret = 0;

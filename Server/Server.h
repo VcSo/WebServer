@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <netinet/in.h>
+#include <memory>
 
 #include "../Log/Log.h"
 #include "../Sql/connSql.h"
@@ -67,9 +68,11 @@ private:
 
     ConnSql *m_sql;
     Http *Users;
+//    std::unique_ptr<ThreadPool<Http>> m_pool;
     ThreadPool<Http> *m_pool;
     Utils utils;
     client_data *users_timer;
+
 };
 
 #endif
