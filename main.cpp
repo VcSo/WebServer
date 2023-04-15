@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 2，表示使用ET + LT
 3，表示使用ET + ET
 
-actor 1 = re 0=pro
+actormode: actor 1 = re 0=pro
 async异步写日志
 */
     Server server(ip, port, "localhost", sql_username, sql_password, sql_database,
