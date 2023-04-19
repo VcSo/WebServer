@@ -20,7 +20,7 @@ using namespace Poco::JSON;
 using namespace std;
 using namespace Poco::Net;
 using namespace Poco::Util;
-// g++ -std=c++14 -W -Wall -g server.cpp -o poco  -lPocoJSON -lPocoFoundation -lPocoNet -lPocoUtil -I /usr/local/include/
+// g++ -std=c++14 -W -Wall -g server.cpp -o server -lPocoJSON -lPocoFoundation -lPocoNet -lPocoUtil -I /usr/local/include/Poco -I/usr/local/lib
 
 class MyRequestHandler : public HTTPRequestHandler
 {
@@ -80,7 +80,7 @@ class MyServerApp :public ServerApplication
 protected:
     int main(const vector<string> &)
     {
-        HTTPServer s(new MyRequestHandlerFactory, ServerSocket(8080), new HTTPServerParams);
+        HTTPServer s(new MyRequestHandlerFactory, ServerSocket(20777), new HTTPServerParams);
 
         s.start();
         cout << endl << "Server started" << endl;
