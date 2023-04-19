@@ -20,6 +20,7 @@ using namespace Poco::JSON;
 using namespace std;
 using namespace Poco::Net;
 using namespace Poco::Util;
+//https://zhuanlan.zhihu.com/p/482805466
 // g++ -std=c++14 -W -Wall -g server.cpp -o server -lPocoJSON -lPocoFoundation -lPocoNet -lPocoUtil -I /usr/local/include/Poco -I/usr/local/lib
 
 class MyRequestHandler : public HTTPRequestHandler
