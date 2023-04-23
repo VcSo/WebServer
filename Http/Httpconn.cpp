@@ -150,6 +150,7 @@ bool Http::read_once()
     //LT读取数据
     if (0 == m_conn_mode)
     {
+        //int recv(SOCKET s, char *buf, int len, int flags);
         bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
         m_read_idx += bytes_read;
 
