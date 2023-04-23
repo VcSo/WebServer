@@ -111,28 +111,28 @@ void Log::write_log(int level, const char *format, ...)
     struct tm *sys_tm = localtime(&t);
     struct tm my_tm = *sys_tm;
 
-    char s[16] = {0};
+    char s_level[16] = {0};
 
     switch(level)
     {
         case 0:
-            strcpy(s, "[DEBUG]: ");
+            strcpy(s_level, "[DEBUG]: ");
             break;
         case 1:
-            strcpy(s, "[INFO]: ");
+            strcpy(s_level, "[INFO]: ");
             break;
         case 2:
-            strcpy(s, "[WARNING]: ");
+            strcpy(s_level, "[WARNING]: ");
             break;
         case 3:
-            strcpy(s, "[ERROR]: ");
+            strcpy(s_level, "[ERROR]: ");
             break;
         default:
-            strcpy(s, "[INFO]: ");
+            strcpy(s_level, "[INFO]: ");
             break;
     }
 
-    int n = snprintf(m_buf, 64,"%s %s", re_time, s);
+    int n = snprintf(m_buf, 64,"%s %s", re_time, s_level);
     m_mutex.lock();
     ++m_count;
     if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) //everyday log
