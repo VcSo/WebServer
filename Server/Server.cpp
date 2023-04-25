@@ -6,7 +6,7 @@ Server::Server()
 }
 
 Server::~Server() {
-    delete m_pool;
+//    delete m_pool;
     delete []Users;
     delete []users_timer;
     free(m_root);
@@ -20,10 +20,11 @@ Server::Server(std::string ip, int port, std::string localhost, std::string sql_
 {
     char server_path[256];
     getcwd(server_path, 256);
+    std::cout << server_path << std::endl;
     char root[] = "/resources";
     m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
-    strcat(m_root, root);
+    strcat(m_root, root); //拼接
 
     Users = new Http[MAX_FD];
     users_timer = new client_data[MAX_FD];
@@ -36,10 +37,12 @@ void Server::set_log(std::string path)
         if(m_async == 1)
         {
             Log::get_instance()->init(path, m_close_log, 2000, 80, 800);
+            LOG_INFO("Test");
         }
         else
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 800000, 0);
+            Log::get_instance()->init(path, m_close_log, 2000, 80, 0);
+            LOG_INFO("Test");
         }
     }
 }
@@ -54,9 +57,11 @@ void Server::setsql()
 
 void Server::threadpool()
 {
-    m_pool = new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum);
-//    m_pool = std::make_unique<ThreadPool<Http>>(m_actor_mode, m_sql, m_threadnum);
+//    m_pool = new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum);
+//    m_pool = std::make_shared<ThreadPool<Http>>(m_actor_mode, m_sql, m_threadnum);
+    m_pool = std::unique_ptr<ThreadPool<Http>>(new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum)); //独占
 }
+
 
 void Server::trig_mode()
 {
@@ -163,6 +168,7 @@ void Server::Start()
 
         for(int i = 0; i < number; ++i)
         {
+            LOG_INFO("SERVER_START");
             int sockfd = events[i].data.fd;
 
             if(sockfd == m_listenfd)
@@ -206,6 +212,7 @@ void Server::Start()
             LOG_INFO("%s", "timer tick");
             timeout = false;
         }
+        std::cout << "loop server"   << std::endl;
     }
 
 }
