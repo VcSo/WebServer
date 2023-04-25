@@ -84,17 +84,17 @@ void* Log::async_write_log()
 }
 
 static int file_num = 0;
-char *setlogname()
+char* setlogname(char* logfile)
 {
     std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     char re_time[64] = {0};
     std::strftime(re_time, sizeof(re_time), "%Y_%m_%d", std::localtime(&now));
-    char logfile[256];
     if(file_num == 0)
     {
         snprintf(logfile, 255, "%s_%s", re_time, "Server.log");
+        file_num++;
     } else{
-        snprintf(logfile, 255, "%s_%s%d%s", re_time, "Server", file_num, ".log");
+        snprintf(logfile, 255, "%s_%s_%d%s", re_time, "Server", file_num + 1, ".log");
     }
     return logfile;
 }
@@ -137,12 +137,13 @@ void Log::write_log(int level, const char *format, ...)
     ++m_count;
     if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) //everyday log
     {
+
         writelog.close();
         if(m_today != my_tm.tm_mday)
         {
             file_num = 0;
-            char *new_log;
-            new_log = setlogname();
+            char new_log[256] = {0};
+            setlogname(new_log);
             writelog.open(new_log, std::ios::binary);
             if(!writelog.is_open())
             {
@@ -152,9 +153,9 @@ void Log::write_log(int level, const char *format, ...)
         }
         else
         {
-            char *new_log;
+            char new_log[256] = {0};
             file_num++;
-            new_log = setlogname();
+            setlogname(new_log);
             writelog.open(new_log, std::ios::binary);
             if(!writelog.is_open())
             {
