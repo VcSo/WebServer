@@ -36,13 +36,13 @@ void Server::set_log(std::string path)
     {
         if(m_async == 1)
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 800, 800);
-            LOG_INFO("Test");
+            Log::get_instance()->init(path, m_close_log, 2000, 80000, 100);
+            LOG_INFO("LOG Test");
         }
         else
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 800, 0);
-            LOG_INFO("Test");
+            Log::get_instance()->init(path, m_close_log, 2000, 80000, 0);
+            LOG_INFO("LOG Test");
         }
     }
 }
@@ -52,7 +52,7 @@ void Server::setsql()
     m_sql = ConnSql::getinstance();
     m_sql->init(m_localhost, m_sql_username, m_sql_password, m_sql_database, 3306, m_sqlthreadnum, m_close_log);
     Users->init_mysqlresult(m_sql);
-    LOG_INFO("Test");
+    LOG_INFO("SQL Test");
 }
 
 void Server::threadpool()
@@ -172,7 +172,8 @@ void Server::Start()
 
             if(sockfd == m_listenfd)
             {
-                std::cout << "dealclientdata()" << std::endl;
+                LOG_INFO("%s", "dealclientdata");
+//                std::cout << "dealclientdata()" << std::endl;
                 bool flag = dealclientdata();
                 if(flag == false)
                 {
@@ -181,26 +182,30 @@ void Server::Start()
             }
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
-                std::cout << "deal_timer()" << std::endl;
+                LOG_INFO("%s", "deal_timer");
+//                std::cout << "deal_timer()" << std::endl;
                 //服务器端关闭连接，移除对应的定时器
                 util_timer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
             }
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) //处理信号
             {
-                std::cout << "dealwithsignal()" << std::endl;
+//                std::cout << "dealwithsignal()" << std::endl;
+                LOG_INFO("%s", "dealwithsignal");
                 bool flag = dealwithsignal(timeout, stop_server);
                 if (flag == false)
                     LOG_ERROR("%s", "dealclientdata failure");
             }
             else if (events[i].events & EPOLLIN)
             {
-                std::cout << "dealwithread()" << std::endl;
+//                std::cout << "dealwithread()" << std::endl;
+                LOG_INFO("%s", "dealwithread");
                 dealwithread(sockfd);
             }
             else if (events[i].events & EPOLLOUT)
             {
-                std::cout << "dealwithwrite()" << std::endl;
+//                std::cout << "dealwithwrite()" << std::endl;
+                LOG_INFO("%s", "dealwithwrite");
                 dealwithwrite(sockfd);
             }
         }
@@ -211,7 +216,6 @@ void Server::Start()
             LOG_INFO("%s", "timer tick");
             timeout = false;
         }
-        std::cout << "loop server"   << std::endl;
     }
 
 }
@@ -244,7 +248,6 @@ bool Server::dealclientdata()
         while (1)
         {
             int connfd = accept(m_listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
-            std::cout << "connfd: " << connfd << std::endl;
             if (connfd < 0)
             {
                 LOG_ERROR("%s:errno is:%d", "accept error", errno);
