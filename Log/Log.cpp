@@ -3,6 +3,30 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+static int file_num = 0;
+char* setlogname(const std::string& log_path, char* logfile)
+{
+    auto fileExists = [](char* logfile) -> bool {
+        std::ifstream ifile(logfile);
+        return (bool)ifile;
+    };
+    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    char re_time[64] = {0};
+    std::strftime(re_time, sizeof(re_time), "%Y_%m_%d", std::localtime(&now));
+    snprintf(logfile, 255, "%s%s_%s_%d%s", log_path.c_str(), re_time, "Server", ++file_num, ".log");
+    while(true)
+    {
+        if(fileExists(logfile))
+        {
+            snprintf(logfile, 255, "%s%s_%s_%d%s", log_path.c_str(), re_time, "Server", ++file_num, ".log");
+            continue;
+        }
+
+        break;
+    }
+    return logfile;
+}
+
 Log::Log()
 {
     m_count = 0;
@@ -29,8 +53,10 @@ Log *Log::get_instance()
 
 bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size)
 {
+    std::cout << "log_init" << std::endl;
     m_split_lines = split_line;
     m_close_log = uselog;
+    log_path = path;
     if(max_queue_size > 0)
     {
         m_is_async = true;
@@ -44,22 +70,24 @@ bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, 
     struct tm my_tm = *sys_tm;
     std::string logname;
     char logfile[256];
-    m_today = my_tm.tm_mday;
+//    m_today = my_tm.tm_mday;
 
     m_log_buf_size = log_buf_size;
     m_buf = new char[log_buf_size];
     memset(m_buf, '\0', m_log_buf_size);
 
     //https://blog.csdn.net/qq_38989148/article/details/107418683
-    if(access(path.c_str(), F_OK) == -1 ){// 文件夹不存在, https://www.cnblogs.com/whwywzhj/p/7801409.html
-        mkdir(path.c_str(), S_IRWXO|S_IRWXG|S_IRWXU);// https://www.jianshu.com/p/06a0da1f6389
+    if(access(log_path.c_str(), F_OK) == -1 ){// 文件夹不存在, https://www.cnblogs.com/whwywzhj/p/7801409.html
+        mkdir(log_path.c_str(), S_IRWXO|S_IRWXG|S_IRWXU);// https://www.jianshu.com/p/06a0da1f6389
     }
+    setlogname(path, logfile);
 
-    snprintf(logfile, 255, "%s%d_%02d_%02d_%s", path.c_str(), my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, "Server.log");
+//    snprintf(logfile, 255, "%s%d_%02d_%02d_%s", log_path.c_str(), my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, "Server.log");
 
     writelog.open(logfile, std::ios::binary);
     if(!writelog.is_open())
     {
+        std::cout << "create log error" << std::endl;
         return false;
     }
     writelog << "create log" << "\n";
@@ -83,21 +111,7 @@ void* Log::async_write_log()
     }
 }
 
-static int file_num = 0;
-char* setlogname(char* logfile)
-{
-    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    char re_time[64] = {0};
-    std::strftime(re_time, sizeof(re_time), "%Y_%m_%d", std::localtime(&now));
-    if(file_num == 0)
-    {
-        snprintf(logfile, 255, "%s_%s", re_time, "Server.log");
-        file_num++;
-    } else{
-        snprintf(logfile, 255, "%s_%s_%d%s", re_time, "Server", file_num + 1, ".log");
-    }
-    return logfile;
-}
+
 
 void Log::write_log(int level, const char *format, ...)
 {
@@ -135,16 +149,16 @@ void Log::write_log(int level, const char *format, ...)
     int n = snprintf(m_buf, 64,"%s %s", re_time, s_level);
     m_mutex.lock();
     ++m_count;
-    if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) //everyday log
+    if (m_today != my_tm.tm_mday || m_count > m_split_lines) //everyday log
     {
 
         writelog.close();
         if(m_today != my_tm.tm_mday)
         {
-            file_num = 0;
             char new_log[256] = {0};
-            setlogname(new_log);
+            setlogname(log_path, new_log);
             writelog.open(new_log, std::ios::binary);
+            m_count = 0;
             if(!writelog.is_open())
             {
                 //LOG_ERROR("Create new logfile error");
@@ -154,9 +168,9 @@ void Log::write_log(int level, const char *format, ...)
         else
         {
             char new_log[256] = {0};
-            file_num++;
-            setlogname(new_log);
+            setlogname(log_path, new_log);
             writelog.open(new_log, std::ios::binary);
+            m_count = 0;
             if(!writelog.is_open())
             {
                 //LOG_ERROR("Create new logfile error");
@@ -169,13 +183,12 @@ void Log::write_log(int level, const char *format, ...)
 
     va_list valst;
     va_start(valst, format);
-    std::string log_str;
     m_mutex.lock();
 
     int m = vsnprintf(m_buf + n, m_log_buf_size - 1, format, valst);
     m_buf[n + m] = '\n';
     m_buf[n + m + 1] = '\0';
-    log_str = m_buf;
+    std::string log_str = m_buf;
 
     m_mutex.unlock();
 

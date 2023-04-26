@@ -32,6 +32,7 @@ private:
 
     std::string m_logfile_name;
     std::string m_fileline;
+    std::string log_path;
 
     std::ofstream writelog;
 
