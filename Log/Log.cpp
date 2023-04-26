@@ -70,7 +70,7 @@ bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, 
     struct tm my_tm = *sys_tm;
     std::string logname;
     char logfile[256];
-//    m_today = my_tm.tm_mday;
+    m_today = my_tm.tm_mday;
 
     m_log_buf_size = log_buf_size;
     m_buf = new char[log_buf_size];
@@ -119,9 +119,7 @@ void Log::write_log(int level, const char *format, ...)
     char re_time[64] = {0};
     std::strftime(re_time, sizeof(re_time), "%Y-%m-%d_%X", std::localtime(&now));
 
-    struct timeval tnow = {0, 0};
-    gettimeofday(&tnow, NULL);
-    time_t t = tnow.tv_sec;
+    time_t t = time(NULL);
     struct tm *sys_tm = localtime(&t);
     struct tm my_tm = *sys_tm;
 
@@ -149,12 +147,19 @@ void Log::write_log(int level, const char *format, ...)
     int n = snprintf(m_buf, 64,"%s %s", re_time, s_level);
     m_mutex.lock();
     ++m_count;
-    if (m_today != my_tm.tm_mday || m_count > m_split_lines) //everyday log
+    if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) //everyday log
     {
+        std::cout << m_count << std::endl;
 
         writelog.close();
         if(m_today != my_tm.tm_mday)
         {
+            time_t td = time(NULL);
+            struct tm *tm_td = localtime(&td);
+            struct tm my_tm = *tm_td;
+            m_today = my_tm.tm_mday;
+            file_num = 0;
+            std::cout << m_today << std::endl;
             char new_log[256] = {0};
             setlogname(log_path, new_log);
             writelog.open(new_log, std::ios::binary);
@@ -167,6 +172,7 @@ void Log::write_log(int level, const char *format, ...)
         }
         else
         {
+
             char new_log[256] = {0};
             setlogname(log_path, new_log);
             writelog.open(new_log, std::ios::binary);
@@ -199,7 +205,8 @@ void Log::write_log(int level, const char *format, ...)
     else
     {
         m_mutex.lock();
-        writelog << log_str << "\n";
+        writelog << log_str;
+        m_mutex.unlock();
     }
 
     va_end(valst);
