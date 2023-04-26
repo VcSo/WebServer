@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     std::string sql_database = "serverm";
     bool use_log = true;
     int lingermode = 1;
-    int et = 0;
+    int et = 0; //0=LT, 1=ET
     int sql_threadnum = 8;
     int thread_num = 10;
     int actor_mode = 0;
@@ -103,7 +103,7 @@ async异步写日志
     server.set_log("./Savelog/");
     server.setsql();
     server.threadpool();
-    server.trig_mode();
+    server.trig_mode(); //触发模式
     server.event_listen();
     server.Start();
 
