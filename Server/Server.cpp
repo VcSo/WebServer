@@ -36,12 +36,12 @@ void Server::set_log(std::string path)
     {
         if(m_async == 1)
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 80, 800);
+            Log::get_instance()->init(path, m_close_log, 2000, 800, 800);
             LOG_INFO("Test");
         }
         else
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 80, 0);
+            Log::get_instance()->init(path, m_close_log, 2000, 800, 0);
             LOG_INFO("Test");
         }
     }
@@ -168,7 +168,6 @@ void Server::Start()
 
         for(int i = 0; i < number; ++i)
         {
-            LOG_INFO("SERVER_START");
             int sockfd = events[i].data.fd;
 
             if(sockfd == m_listenfd)
