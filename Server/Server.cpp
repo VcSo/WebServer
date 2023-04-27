@@ -36,7 +36,7 @@ void Server::set_log(std::string path)
     {
         if(m_async == 1)
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 80000, 100);
+            Log::get_instance()->init(path, m_close_log, 2000, 80000, 8);
             LOG_INFO("LOG Test");
         }
         else
@@ -67,19 +67,19 @@ void Server::trig_mode()
 {
     switch(m_et)
     {
-        case 0:
+        case 0: //LT+LT
             m_listen_mode = 0;
             m_conn_mode = 0;
             break;
-        case 1:
+        case 1: //LT+ET
             m_listen_mode = 0;
             m_conn_mode = 1;
             break;
-        case 2:
+        case 2: //ET+LT
             m_listen_mode = 1;
             m_conn_mode = 0;
             break;
-        case 3:
+        case 3: //ET+ET
             m_listen_mode = 1;
             m_conn_mode = 1;
             break;
