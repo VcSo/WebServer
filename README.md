@@ -33,14 +33,32 @@ mkdir build && cp -r ./resources/ ./build
 cd build
 cmake ..
 make -j4
-./serverone
-#./serverone -i ip -p port -u sql_username -w sql_password -d sql_database -g use_log -l linger -e et -s sql_threadnnum -t threadnum -a actor(1为Reactor,0为Proactor) -c async
-#./serverone -i 127.0.0.1 -p 20999 -u root -w 123456 -d serverm ...
-
-0-表示使用LT + LT
-1-表示使用LT + ET
-2-表示使用ET + LT
-3-表示使用ET + ET
-
-1为Reactor,0为Proactor
+//mkdir build && cp -r resources ./build
+sh build.sh
 ```
+---
+
+## Run
+
+``` 
+./serverone -ip 127.0.0.1 -p 20999 -u sql_username -w sql_password -d sql_database 
+            -g 1 -l 1 -e 3 -s 8 -t 8 -a 1  -c 1
+```
+
+`i:p:u:w:d:g:l:e:s:t:a:c:`
+
+- i: ip,
+- p: port, 
+- u: sql_username, 
+- w: sql_password, 
+- d: sql_database, 
+- g: use_log, 0为false，1为true
+- l: lingermode, onoff 0/1
+- e: et, 0:lt+lt, 1:lt+et, 2:et+lt, 3:et+et
+- s: sqlthreadnum, 
+- t: threadnum, 
+- a: actor_mode, 0 = proactor, 1 = reactor
+- c: async, log use async
+ 
+ 
+ 
