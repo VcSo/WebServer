@@ -29,7 +29,15 @@ int main(int argc, char **argv)
     std::string sql_database = "serverm";
     bool use_log = true;
     int lingermode = 1;
-    int et = 0; //0=LT, 1=ET
+
+    /*
+    et_init:
+    0，表示使用LT + LT
+    1，表示使用LT + ET
+    2，表示使用ET + LT
+    3，表示使用ET + ET
+    */
+    int et = 3;
     int sql_threadnum = 8;
     int thread_num = 10;
     int actor_mode = 0;
@@ -59,10 +67,10 @@ int main(int argc, char **argv)
                 sql_database = optarg;
                 break;
             case 'g':
-                if(*optarg == '1')
-                    use_log = true;
-                else
+                if(*optarg == '0')
                     use_log = false;
+                else
+                    use_log = true;
                 break;
             case 'l':
                 lingermode = atoi(optarg);
@@ -80,7 +88,7 @@ int main(int argc, char **argv)
                 actor_mode = atoi(optarg);
                 break;
             case 'c':
-                actor_mode = atoi(optarg);
+                async = atoi(optarg);
                 break;
             default:
                 ;
