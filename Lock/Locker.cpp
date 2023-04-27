@@ -36,7 +36,6 @@ Cond::Cond()
 {
     if (pthread_cond_init(&m_cond, NULL) != 0)
     {
-        //pthread_mutex_destroy(&m_mutex);
         throw std::exception();
     }
 }
@@ -49,18 +48,14 @@ Cond::~Cond()
 bool Cond::wait(pthread_mutex_t *m_mutex)
 {
     int ret = 0;
-    //pthread_mutex_lock(&m_mutex);
     ret = pthread_cond_wait(&m_cond, m_mutex);
-    //pthread_mutex_unlock(&m_mutex);
     return ret == 0;
 }
 
 bool Cond::timewait(pthread_mutex_t *m_mutex, struct timespec t)
 {
     int ret = 0;
-    //pthread_mutex_lock(&m_mutex);
     ret = pthread_cond_timedwait(&m_cond, m_mutex, &t);
-    //pthread_mutex_unlock(&m_mutex);
     return ret == 0;
 }
 
