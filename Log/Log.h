@@ -46,6 +46,7 @@ private:
     long long m_count;  //日志行数记录
     char *m_buf;
 
+    pthread_t *log_tids;
     block_queue<std::string> *m_log_que;
     Locker m_mutex;
 };

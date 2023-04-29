@@ -42,7 +42,8 @@ Log::~Log()
     }
 
     delete m_log_que;
-    delete []m_buf;
+    delete[] m_buf;
+    delete[] log_tids;
 }
 
 Log *Log::get_instance()
@@ -61,8 +62,28 @@ bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, 
     {
         m_is_async = true;
         m_log_que = new block_queue<std::string>(max_queue_size);
-        pthread_t tid;
-        pthread_create(&tid, NULL, flush_log_threaad, NULL);
+        log_tids = new pthread_t[5];
+        if(!log_tids)
+        {
+            throw std::exception();
+        }
+
+        for(int i = 0; i < 5; ++i)
+        {
+            if(pthread_create(&log_tids[i], nullptr, flush_log_threaad, this) != 0)
+            {
+                delete[] log_tids;
+                throw std::exception();
+            }
+
+            if(pthread_detach(log_tids[i]))
+            {
+                delete[] log_tids;
+                throw std::exception();
+            }
+        }
+//        pthread_t tid;
+//        pthread_create(&tid, NULL, flush_log_threaad, NULL);
     }
 
     time_t t = time(NULL);
