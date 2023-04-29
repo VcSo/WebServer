@@ -7,9 +7,14 @@ Server::Server()
 
 Server::~Server() {
 //    delete m_pool;
+    close(m_epollfd);
+    close(m_listenfd);
+    close(m_pipefd[1]);
+    close(m_pipefd[0]);
     delete []Users;
     delete []users_timer;
     free(m_root);
+
 }
 
 Server::Server(std::string ip, int port, std::string localhost, std::string sql_username, std::string sql_password, std::string sql_database,
@@ -36,7 +41,7 @@ void Server::set_log(std::string path)
     {
         if(m_async == 1)
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 80000, 8);
+            Log::get_instance()->init(path, m_close_log, 2000, 80000, 800);
             LOG_INFO("LOG Test");
         }
         else
