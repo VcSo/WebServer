@@ -96,15 +96,6 @@ int main(int argc, char **argv)
     }
     std::cout << "http://" << ip << ":" << port << std::endl;
 
-/*
-0，表示使用LT + LT
-1，表示使用LT + ET
-2，表示使用ET + LT
-3，表示使用ET + ET
-
-actormode: actor 1 = re 0=pro
-async异步写日志
-*/
     Server server(ip, port, "localhost", sql_username, sql_password, sql_database,
                   use_log, lingermode, et, sql_threadnum, thread_num, actor_mode, async); //日志 友善关闭 lt/et sql thread actor 异步
 
