@@ -40,6 +40,11 @@ int main(int argc, char **argv)
     int et = 3;
     int sql_threadnum = 8;
     int thread_num = 10;
+    /*
+     * actor_mode:
+     * 0: proactor
+     * 1: reactor
+     */
     int actor_mode = 0;
     int async = 1;
 
