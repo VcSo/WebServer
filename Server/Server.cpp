@@ -98,7 +98,7 @@ void Server::event_listen()
     m_listenfd = socket(AF_INET, SOCK_STREAM, 0);
     assert(m_listenfd >= 0);
 
-    struct linger tmp = {m_lingermode, 1}; ///* 优雅关闭: 直到所剩数据发送完毕或超时 */
+    struct linger tmp = {m_lingermode, 1}; /*  lingmode = 0，优雅关闭: 直到所剩数据发送完毕或超时,正常4次挥手 */
     setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
 
     int ret = 0;
