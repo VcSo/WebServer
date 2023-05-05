@@ -2,11 +2,10 @@
 
 #include "../Http/Httpconn.h"
 
-sort_timer_lst::sort_timer_lst()
+sort_timer_lst::sort_timer_lst() : head(nullptr), tail(nullptr)
 {
-    head = NULL;
-    tail = NULL;
 }
+
 sort_timer_lst::~sort_timer_lst()
 {
     util_timer *tmp = head;
@@ -29,7 +28,7 @@ void sort_timer_lst::add_timer(util_timer *timer)
         head = tail = timer;
         return;
     }
-    if (timer->expire < head->expire)
+    if (timer->expire < head->expire) //如果目标定时器时间小于所有定时器时间，将该定时器插入到头部，否则需要调用add_timer重载函数
     {
         timer->next = head;
         head->prev = timer;
@@ -38,6 +37,8 @@ void sort_timer_lst::add_timer(util_timer *timer)
     }
     add_timer(timer, head);
 }
+
+//某个定时任务发生变化时,调整对应的定时器在链表中的位置。这个函数只考虑被调整的定时器的超时时间延长的情况，即该定时器需要往链表的尾部移动
 void sort_timer_lst::adjust_timer(util_timer *timer)
 {
     if (!timer)
