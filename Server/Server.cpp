@@ -98,6 +98,12 @@ void Server::event_listen()
     m_listenfd = socket(AF_INET, SOCK_STREAM, 0);
     assert(m_listenfd >= 0);
 
+    /*
+     * struct linger {
+     *  int l_onoff; 0 = off, nozero = on
+     *  int l_linger; linger time
+     * };
+     */
     struct linger tmp = {m_lingermode, 1}; /*  lingmode = 0，优雅关闭: 直到所剩数据发送完毕或超时,正常4次挥手 */
     setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
 
@@ -133,7 +139,7 @@ void Server::event_listen()
 
     utils.init(TIMESLOT);
 
-    epoll_event events[MAX_EVENT_NUMBER];
+//    epoll_event events[MAX_EVENT_NUMBER];
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
 
