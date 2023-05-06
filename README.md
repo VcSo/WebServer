@@ -33,7 +33,6 @@ mkdir build && cp -r ./resources/ ./build
 cd build
 cmake ..
 make -j4
-//mkdir build && cp -r resources ./build
 sh build.sh
 ```
 ---
@@ -52,13 +51,10 @@ sh build.sh
 - u: sql_username, 
 - w: sql_password, 
 - d: sql_database, 
-- g: use_log, 0为false，1为true
-- l: lingermode, onoff 0/1
-- e: et, 0:lt+lt, 1:lt+et, 2:et+lt, 3:et+et
+- g: use_log, 0为false，1为true,
+- l: lingermode, onoff 0/1,
+- e: et, 0:lt+lt, 1:lt+et, 2:et+lt, 3:et+et,
 - s: sqlthreadnum, 
 - t: threadnum, 
-- a: actor_mode, 0 = proactor, 1 = reactor
+- a: actor_mode, 0 = proactor, 1 = reactor,
 - c: async, log use async
- 
- 
- 
