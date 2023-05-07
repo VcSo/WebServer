@@ -108,7 +108,7 @@ void ThreadPool<T>::run()
             continue;
         }
 
-        if(m_actor == 1)
+        if(m_actor == 1) //re
         {
             if(request->m_state == 0)
             {
