@@ -113,8 +113,11 @@ private:
     int m_write;
     int m_write_idx;
     int m_read;
+    //缓冲区中m_read_buf中数据的最后一个字节的下一个位置
     int m_read_idx;
+    //m_read_buf读取的位置m_checked_idx
     int m_checked_idx;
+    //m_read_buf中已经解析的字符个数
     int m_start_line;
     int bytes_to_send;
     int bytes_have_send;
@@ -124,7 +127,9 @@ private:
     bool m_close_log;
     bool m_linger;
 
+    //存储接收到的数据
     char m_read_buf[READ_BUFFER_SIZE];
+    //存储发出的响应报文数据
     char m_write_buf[WRITE_BUFFER_SIZE];
     char m_real_file[FILENAME_LEN];
 
