@@ -265,6 +265,7 @@ void Http::process()
 }
 
 //请求报文进行解析
+//GET / HTTP/1.1\r\nHost: www.baidu.com.cn\r\nConnection: close\r\n\r\n
 Http::HTTP_CODE Http::process_read()
 {
     LINE_STATUS line_status = LINE_OK;
@@ -275,7 +276,7 @@ Http::HTTP_CODE Http::process_read()
     {
         text = get_line();
         m_start_line = m_checked_idx;
-        LOG_INFO("%s", text);
+        LOG_INFO("TEXT: %s", text);
         switch (m_check_state)
         {
             case CHECK_STATE_REQUESTLINE: //解析请求行

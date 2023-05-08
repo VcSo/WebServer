@@ -104,7 +104,7 @@ private:
     HTTP_CODE parse_content(char *text);
     HTTP_CODE do_request();
 
-    char *get_line() { return m_read_buf + m_start_line; };
+    char *get_line() { return m_read_buf + m_start_line; }; //\r \n \0
 
 private:
     int m_sockfd;
