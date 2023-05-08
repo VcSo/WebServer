@@ -264,6 +264,7 @@ void Http::process()
     modfd(m_epollfd, m_sockfd, EPOLLOUT, m_conn_mode);
 }
 
+//请求报文进行解析
 Http::HTTP_CODE Http::process_read()
 {
     LINE_STATUS line_status = LINE_OK;
@@ -479,9 +480,10 @@ Http::HTTP_CODE Http::parse_request_line(char *text)
     return Http::NO_REQUEST;
 }
 
+//GET / HTTP/1.1\r\nHost: www.baidu.com.cn\r\nConnection: close\r\n\r\n
 Http::LINE_STATUS Http::parse_line()
 {
-    char temp = 0;
+    char temp = '0';
     for(; m_checked_idx < m_read_idx; ++m_checked_idx)
     {
         temp = m_read_buf[m_checked_idx];
