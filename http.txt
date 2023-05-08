@@ -1,12 +1,40 @@
-GET / HTTP/1.1
-Host: baidu.com
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
-Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
-Accept-Encoding: gzip, deflate
+GET https://www.baidu.com/ HTTP/1.1
+Host: www.baidu.com
 Connection: keep-alive
-Cookie: BAIDUID=B0B9909DC0A:FG=1; BIDUPSID=6886F16232ADE2; PSTM=1769
 Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+sec-ch-ua: "Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9
+Cookie: BAIDUID_BFESS=7468557B0460339370670671F7EA5090:FG=1; BIDUPSID=7468557B0460339370670671F7EA5090; PSTM=1683566995; BD_HOME=1; H_PS_PSSID=38515_36555_38529_38470_38538_38468_26350_38544; BD_UPN=12314753; BA_HECTOR=80aka4848h80aka4agalal1r1i5iccn1m; ZFY=3pcDPY87qDjwx:ASws86ZTA1ZRLAygerQdnai8urNezg:C
+
+
+---
+HTTP/1.1 200 OK
+Bdpagetype: 1
+Bdqid: 0xd62c83fa0033eede
+Connection: keep-alive
+Content-Security-Policy: frame-ancestors 'self' https://chat.baidu.com https://fj-chat.baidu.com https://hba-chat.baidu.com https://hbe-chat.baidu.com https://njjs-chat.baidu.com https://nj-chat.baidu.com https://hna-chat.baidu.com https://hnb-chat.baidu.com;
+Content-Type: text/html; charset=utf-8
+Date: Mon, 08 May 2023 17:30:29 GMT
+Server: BWS/1.1
+Set-Cookie: BDSVRTM=0; path=/
+Set-Cookie: BD_HOME=1; path=/
+Set-Cookie: H_PS_PSSID=38515_36555_38529_38470_38538_38468_26350_38544; path=/; domain=.baidu.com
+Strict-Transport-Security: max-age=172800
+Traceid: 1683567029238937012215432855132860313310
+X-Ua-Compatible: IE=Edge,chrome=1
+Content-Length: 387685
+
+<!DOCTYPE html><!--STATUS OK
+
 
 HTTP/1.1 302 Moved Temporarily
 Server: bfe/1.0.8.18
@@ -27,4 +55,32 @@ Cache-Control: privae
 </body>
 </html>
 
-----
+----1----
+
+GET http://www.chinasei.com.cn/ HTTP/1.1
+Host: www.chinasei.com.cn
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9
+
+
+
+HTTP/1.1 200 OK
+Date: Mon, 08 May 2023 17:36:13 GMT
+Server: Apache/2.4.23 (Win64) OpenSSL/1.0.2j
+Accept-Ranges: bytes
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html
+Content-Length: 121528
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="renderer" content="webkit" />
+
+<!--栏目logo-->
