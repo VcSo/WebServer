@@ -25,7 +25,7 @@ Server::Server(std::string ip, int port, std::string localhost, std::string sql_
 {
     char server_path[256];
     getcwd(server_path, 256);
-    std::cout << server_path << std::endl;
+//    std::cout << server_path << std::endl;
     char root[] = "/resources";
     m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
@@ -346,7 +346,6 @@ void Server::dealwithread(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
 
-
     //reactor
     if(m_actor_mode == 1)
     {
@@ -381,7 +380,7 @@ void Server::dealwithread(int sockfd)
             //若监测到读事件，将该事件放入请求队列
             m_pool->append_p(Users + sockfd);
 
-            if (timer)
+            if(timer)
             {
                 adjust_timer(timer);
             }
