@@ -49,6 +49,8 @@ void Server::set_log(std::string path)
             Log::get_instance()->init(path, m_close_log, 2000, 80000, 0);
             LOG_INFO("LOG Test");
         }
+
+        std::cout << "Log init" << std::endl;
     }
 }
 
@@ -57,6 +59,7 @@ void Server::setsql()
     m_sql = ConnSql::getinstance();
     m_sql->init(m_localhost, m_sql_username, m_sql_password, m_sql_database, 3306, m_sqlthreadnum, m_close_log);
     Users->init_mysqlresult(m_sql);
+    std::cout << "Connected Mysql" << std::endl;
     LOG_INFO("SQL Test");
 }
 
@@ -65,6 +68,7 @@ void Server::threadpool()
 //    m_pool = new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum);
 //    m_pool = std::make_shared<ThreadPool<Http>>(m_actor_mode, m_sql, m_threadnum);
     m_pool = std::unique_ptr<ThreadPool<Http>>(new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum)); //独占
+    std::cout << "ThreadPool init" << std::endl;
 }
 
 
@@ -166,6 +170,7 @@ void Server::Start()
 {
     bool timeout = false;
     bool stop_server = false;
+    std::cout << "Server start" << std::endl;
 
     while(!stop_server)
     {
@@ -181,7 +186,7 @@ void Server::Start()
         {
             int sockfd = events[i].data.fd;
 
-            if(sockfd == m_listenfd)
+            if(sockfd == m_listenfd) //新连接
             {
                 LOG_INFO("%s", "dealclientdata");
 //                std::cout << "dealclientdata()" << std::endl;
@@ -221,7 +226,7 @@ void Server::Start()
             }
         }
 
-        if (timeout)
+        if(timeout)
         {
             utils.timer_handler();
             LOG_INFO("%s", "timer tick");
@@ -256,15 +261,15 @@ bool Server::dealclientdata()
     }
     else
     {
-        while (1)
+        while(true)
         {
             int connfd = accept(m_listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
-            if (connfd < 0)
+            if(connfd < 0)
             {
                 LOG_ERROR("%s:errno is:%d", "accept error", errno);
                 break;
             }
-            if (Http::m_user_count >= MAX_FD)
+            if(Http::m_user_count >= MAX_FD)
             {
                 utils.show_error(connfd, "Internal server busy");
                 LOG_ERROR("%s", "Internal server busy");
