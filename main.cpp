@@ -21,7 +21,6 @@ static struct option opts[] = {
 
 int main(int argc, char **argv)
 {
-    std::cout << "main start" << std::endl;
     std::string ip = "";
     int port = 20999;
     std::string sql_username = "root";
@@ -39,7 +38,7 @@ int main(int argc, char **argv)
     */
     int et = 3;
     int sql_threadnum = 8;
-    int thread_num = 1;
+    int thread_num = 10;
     /*
      * actor_mode:
      * 0: proactor
