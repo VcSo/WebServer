@@ -54,7 +54,6 @@ Log *Log::get_instance()
 
 bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size)
 {
-    std::cout << "log_init" << std::endl;
     m_split_lines = split_line;
     m_close_log = uselog;
     log_path = path;
