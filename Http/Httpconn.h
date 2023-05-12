@@ -119,7 +119,9 @@ private:
     int m_checked_idx;
     //m_read_buf中已经解析的字符个数
     int m_start_line;
+    //需要发送的数据大小
     int bytes_to_send;
+    //已经发送的数据大小
     int bytes_have_send;
     int m_content_length;
     int m_iv_count;

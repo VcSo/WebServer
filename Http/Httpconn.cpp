@@ -62,6 +62,7 @@ void addfd(int epollfd, int sockfd, bool one_shot, int conn_mode)
 
     if(one_shot)
         event.events |= EPOLLONESHOT; //EPOLLONESHOT：只监听一次事件
+    //将被监听的描述符添加到epoll句柄或从epool句柄中删除或者对监听事件进行修改
     epoll_ctl(epollfd, EPOLL_CTL_ADD, sockfd, &event);
     setnonblocking(sockfd);
 }
@@ -192,20 +193,20 @@ bool Http::write()
 {
     int temp = 0;
 
-    if (bytes_to_send == 0)
+    if(bytes_to_send == 0)
     {
         modfd(m_epollfd, m_sockfd, EPOLLIN, m_conn_mode);
         init();
         return true;
     }
 
-    while (1)
+    while(true)
     {
         temp = writev(m_sockfd, m_iv, m_iv_count);
 
-        if (temp < 0)
+        if(temp < 0)
         {
-            if (errno == EAGAIN)
+            if(errno == EAGAIN)
             {
                 modfd(m_epollfd, m_sockfd, EPOLLOUT, m_conn_mode);
                 return true;
@@ -216,9 +217,10 @@ bool Http::write()
 
         bytes_have_send += temp;
         bytes_to_send -= temp;
-        if (bytes_have_send >= m_iv[0].iov_len)
+        if(bytes_have_send >= m_iv[0].iov_len) //iov_len减去writev之后的大小
         {
             m_iv[0].iov_len = 0;
+            //将文件中未发送的数据写入缓冲区
             m_iv[1].iov_base = m_file_address + (bytes_have_send - m_write_idx);
             m_iv[1].iov_len = bytes_to_send;
         }
@@ -228,7 +230,7 @@ bool Http::write()
             m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
         }
 
-        if (bytes_to_send <= 0)
+        if(bytes_to_send <= 0)
         {
             unmap();
             modfd(m_epollfd, m_sockfd, EPOLLIN, m_conn_mode);
@@ -277,6 +279,7 @@ Http::HTTP_CODE Http::process_read()
         text = get_line();
         m_start_line = m_checked_idx;
         LOG_INFO("TEXT: %s", text);
+//        std::cout << "TEXT = " << text << std::endl;
         switch (m_check_state)
         {
             case CHECK_STATE_REQUESTLINE: //解析请求行
@@ -427,6 +430,8 @@ Http::HTTP_CODE Http::parse_headers(char *text)
 
 Http::HTTP_CODE Http::parse_request_line(char *text)
 {
+    //在HTTP请求头中，\t用于分隔请求头字段名和字段值
+    // GET /xxx.jpg HTTP/1.1
     m_url = strpbrk(text, " \t");
     if (!m_url)
     {
@@ -434,8 +439,9 @@ Http::HTTP_CODE Http::parse_request_line(char *text)
     }
 
     *m_url++ = '\0';
-    char *method = text;
+    char *method = text; //GET
 
+    //strcasecmp，比较字符串是否相同
     if (strcasecmp(method, "GET") == 0)
     {
         m_method = GET;
@@ -448,14 +454,15 @@ Http::HTTP_CODE Http::parse_request_line(char *text)
     else
         return BAD_REQUEST;
 
-    m_url += strspn(m_url, " \t");
-    m_version = strpbrk(m_url, " \t");
+    //函数strspn()返回m_url的初始段的长度，该初始段完全由包含在“\t”中的字符组成
+    m_url += strspn(m_url, " \t"); //_/_http/1.1
+    m_version = strpbrk(m_url, " \t"); //_http/1.1
 
     if (!m_version)
         return BAD_REQUEST;
 
     *m_version++ = '\0';
-    m_version += strspn(m_version, " \t");
+    m_version += strspn(m_version, " \t"); //http/1.1
 
     if (strcasecmp(m_version, "HTTP/1.1") != 0)
         return BAD_REQUEST;
@@ -472,11 +479,12 @@ Http::HTTP_CODE Http::parse_request_line(char *text)
         m_url = strchr(m_url, '/');
     }
 
+
     if (!m_url || m_url[0] != '/')
         return Http::BAD_REQUEST;
     //当url为/时，显示判断界面
     if (strlen(m_url) == 1)
-        strcat(m_url, "index.html");
+        strcat(m_url, "index.html"); //m_url = m_url + index.html
     m_check_state = CHECK_STATE_HEADER;
     return Http::NO_REQUEST;
 }
@@ -519,6 +527,7 @@ Http::LINE_STATUS Http::parse_line()
 
 bool Http::add_status_line(int status, const char *title)
 {
+    //http/1.1,200,OK
     return add_response("%s %d %s\r\n", "HTTP/1.1", status, title);
 }
 
@@ -527,11 +536,14 @@ bool Http::add_response(const char *format, ...)
     if (m_write_idx >= WRITE_BUFFER_SIZE)
         return false;
 
-    va_list arg_list;
-    va_start(arg_list, format);
+    va_list arg_list; //可变参数列表
+    va_start(arg_list, format); //将变量arg_list初始化为传入参数
+    //将数据format从可变参数列表写入缓冲区写，返回写入数据的长度
     int len = vsnprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - 1 - m_write_idx, format, arg_list);
+
     if (len >= (WRITE_BUFFER_SIZE - 1 - m_write_idx))
     {
+        //
         va_end(arg_list);
         return false;
     }
@@ -539,7 +551,7 @@ bool Http::add_response(const char *format, ...)
     m_write_idx += len;
     va_end(arg_list);
 
-    LOG_INFO("request:%s", m_write_buf);
+//    LOG_INFO("request:%s", m_write_buf);
 
     return true;
 }
@@ -576,7 +588,6 @@ void Http::close_conn(bool real_close)
 {
     if(real_close && (m_sockfd != -1))
     {
-        printf("close %d\n", m_sockfd);
         removefd(m_epollfd, m_sockfd);
         m_sockfd = -1;
         m_user_count--;
@@ -610,16 +621,16 @@ Http::HTTP_CODE Http::do_request()
         //user=123&passwd=123
         char name[100], password[100];
         int i;
-        for (i = 5; m_string[i] != '&'; ++i)
+        for(i = 5; m_string[i] != '&'; ++i)
             name[i - 5] = m_string[i];
         name[i - 5] = '\0';
 
         int j = 0;
-        for (i = i + 10; m_string[i] != '\0'; ++i, ++j)
+        for(i = i + 10; m_string[i] != '\0'; ++i, ++j)
             password[j] = m_string[i];
         password[j] = '\0';
 
-        if (*(p + 1) == '3')
+        if(*(p + 1) == '3')
         {
             //如果是注册，先检测数据库中是否有重名的
             //没有重名的，进行增加数据
@@ -638,14 +649,14 @@ Http::HTTP_CODE Http::do_request()
             strcat(sql_insert, password);
             strcat(sql_insert, "',now())");
 
-            if (users.find(name) == users.end())
+            if(users.find(name) == users.end())
             {
                 m_mutex.lock();
                 int res = mysql_query(mysql, sql_insert);
                 users.insert(std::pair<std::string, std::string>(name, password));
                 m_mutex.unlock();
 
-                if (!res)
+                if(!res)
                     strcpy(m_url, "/log.html");
                 else
                     strcpy(m_url, "/registerError.html");
@@ -655,16 +666,16 @@ Http::HTTP_CODE Http::do_request()
         }
         //如果是登录，直接判断
         //若浏览器端输入的用户名和密码在表中可以查找到，返回1，否则返回0
-        else if (*(p + 1) == '2')
+        else if(*(p + 1) == '2')
         {
-            if (users.find(name) != users.end() && users[name] == password)
+            if(users.find(name) != users.end() && users[name] == password)
                 strcpy(m_url, "/welcome.html");
             else
                 strcpy(m_url, "/logError.html");
         }
     }
 
-    if (*(p + 1) == '0')
+    if(*(p + 1) == '0')
     {
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/register.html");
@@ -672,7 +683,7 @@ Http::HTTP_CODE Http::do_request()
 
         free(m_url_real);
     }
-    else if (*(p + 1) == '1')
+    else if(*(p + 1) == '1')
     {
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/log.html");
@@ -680,7 +691,7 @@ Http::HTTP_CODE Http::do_request()
 
         free(m_url_real);
     }
-    else if (*(p + 1) == '5')
+    else if(*(p + 1) == '5')
     {
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/picture.html");
@@ -688,7 +699,7 @@ Http::HTTP_CODE Http::do_request()
 
         free(m_url_real);
     }
-    else if (*(p + 1) == '6')
+    else if(*(p + 1) == '6')
     {
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/video.html");
@@ -696,7 +707,7 @@ Http::HTTP_CODE Http::do_request()
 
         free(m_url_real);
     }
-    else if (*(p + 1) == '7')
+    else if(*(p + 1) == '7')
     {
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/fans.html");
@@ -705,16 +716,25 @@ Http::HTTP_CODE Http::do_request()
         free(m_url_real);
     }
     else
-        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1);
+        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //拼接
 
-    if (stat(m_real_file, &m_file_stat) < 0)
+    if(stat(m_real_file, &m_file_stat) < 0) //获取文件信息
+    {
+        LOG_ERROR("%s: %s", m_real_file, "no_found");
         return NO_RESOURCE;
+    }
 
-    if (!(m_file_stat.st_mode & S_IROTH))
+    if(!(m_file_stat.st_mode & S_IROTH)) //文件可读
+    {
+        LOG_ERROR("%s: %s", m_real_file, "cant_read");
         return FORBIDDEN_REQUEST;
+    }
 
-    if (S_ISDIR(m_file_stat.st_mode))
+    if(S_ISDIR(m_file_stat.st_mode)) //是目录不是文件
+    {
+        LOG_ERROR("%s: %s", m_real_file, "is_dir");
         return BAD_REQUEST;
+    }
 
     int fd = open(m_real_file, O_RDONLY);
     m_file_address = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
@@ -726,6 +746,7 @@ void Http::unmap()
 {
     if(m_file_address)
     {
+        //将m_file_address映射的内存区域解除映射。
         munmap(m_file_address, m_file_stat.st_size);
         m_file_address = 0;
     }
