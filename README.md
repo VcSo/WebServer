@@ -27,19 +27,23 @@ insert into user(uid, username,password,create_time) values(1,'123','456',now())
 
 ## build
 
+1. sh build.sh
+
+2.
 ```
 mkdir build && cp -r ./resources/ ./build
 cd build
 cmake ..
 make -j4
-sh build.sh
+
 ```
 ---
 
 ## Run
 
 ``` 
-./serverone -ip 127.0.0.1 -p 20999 -u sql_username -w sql_password -d sql_database 
+1. ./serverone
+2. ./serverone -ip 127.0.0.1 -p 20999 -u sql_username -w sql_password -d sql_database 
             -g 1 -l 1 -e 3 -s 8 -t 8 -a 1  -c 1
 ```
 
@@ -62,8 +66,8 @@ sh build.sh
 
 ## Siege压测
 
-- 1000并发，重复10次，环境入门云主机1核，多次测试结果在95%上下浮动
-- siege -c 1000 -r 10 -f url.txt(需要修改limit)
+- 1000并发，重复10次，入门云主机1核2GB，多次测试结果在95%上下浮动
+- siege -c 1000 -r 10 -f url.txt(需修改limit)
 ```
 Transactions:                   2415 hits
 Availability:                  95.71 %
