@@ -64,3 +64,17 @@ sh build.sh
 
 - 1000并发，重复10次，环境入门云主机1核，多次测试结果在95%上下浮动
 - siege -c 1000 -r 10 -f url.txt(需要修改limit)
+```
+Transactions:                   2415 hits
+Availability:                  95.71 %
+Elapsed time:                  10.92 secs
+Data transferred:               0.06 MB
+Response time:                  0.49 secs
+Transaction rate:             241.15 trans/sec
+Throughput:                     0.01 MB/sec
+Concurrency:                  107.39
+Successful transactions:        2415
+Failed transactions:             135
+Longest transaction:            6.33
+Shortest transaction:           0.04
+```
