@@ -23,30 +23,29 @@ Server::Server(std::string ip, int port, std::string localhost, std::string sql_
                     m_close_log(close_log), m_lingermode(lingermode), m_et(et), m_sqlthreadnum(sql_threadnum), m_threadnum(threadnum), m_actor_mode(actor_mode), m_async(async)
 
 {
+    Users = new Http[MAX_FD];
+    users_timer = new client_data[MAX_FD];
     char server_path[256];
     getcwd(server_path, 256);
-//    std::cout << server_path << std::endl;
     char root[] = "/resources";
     m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
     strcat(m_root, root); //拼接
 
-    Users = new Http[MAX_FD];
-    users_timer = new client_data[MAX_FD];
 }
 
-void Server::set_log(std::string path)
+void Server::set_log(const std::string path)
 {
     if(m_close_log == true)
     {
         if(m_async == 1)
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 80000, 800);
+            Log::get_instance()->init(path, m_close_log, 2000, 1000000, 800);
             LOG_INFO("LOG Test");
         }
         else
         {
-            Log::get_instance()->init(path, m_close_log, 2000, 80000, 0);
+            Log::get_instance()->init(path, m_close_log, 2000, 800000, 0);
             LOG_INFO("LOG Test");
         }
 
@@ -60,7 +59,7 @@ void Server::setsql()
     m_sql->init(m_localhost, m_sql_username, m_sql_password, m_sql_database, 3306, m_sqlthreadnum, m_close_log);
     Users->init_mysqlresult(m_sql);
     std::cout << "Connected Mysql" << std::endl;
-    LOG_INFO("SQL Test");
+    LOG_INFO("SQL Connected");
 }
 
 void Server::threadpool()
@@ -69,6 +68,7 @@ void Server::threadpool()
 //    m_pool = std::make_shared<ThreadPool<Http>>(m_actor_mode, m_sql, m_threadnum);
     m_pool = std::unique_ptr<ThreadPool<Http>>(new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum)); //独占
     std::cout << "ThreadPool init" << std::endl;
+    LOG_INFO("ThreadPool created")
 }
 
 
@@ -131,10 +131,10 @@ void Server::event_listen()
         LOG_ERROR("setsockopt SO_REUSEADDR error");
     }
     //https://www.zhihu.com/question/42308970/answer/246334766
-    if(setsockopt(m_listenfd, IPPROTO_TCP, TCP_NODELAY, (char*)&reuse, int(sizeof(int))) == -1)
-    {
-        LOG_ERROR("setsockopt TCP_NODELAY error");
-    }
+//    if(setsockopt(m_listenfd, IPPROTO_TCP, TCP_NODELAY, (char*)&reuse, int(sizeof(int))) == -1)
+//    {
+//        LOG_ERROR("setsockopt TCP_NODELAY error");
+//    }
 
     ret = bind(m_listenfd, (struct sockaddr*) &address, sizeof(address));
     assert(ret >= 0);
@@ -155,6 +155,7 @@ void Server::event_listen()
 
     utils.setnonblocking(m_pipefd[1]);
     utils.addfd(m_epollfd, m_pipefd[0], false, 0);
+
     utils.addsig(SIGPIPE, SIG_IGN);
     utils.addsig(SIGALRM, utils.sig_handler, false);
     utils.addsig(SIGTERM, utils.sig_handler, false);
@@ -188,8 +189,7 @@ void Server::Start()
 
             if(sockfd == m_listenfd) //新连接
             {
-                LOG_INFO("%s", "dealclientdata");
-//                std::cout << "dealclientdata()" << std::endl;
+//                LOG_INFO("%s", "dealclientdata");
                 bool flag = dealclientdata();
                 if(flag == false)
                 {
@@ -198,7 +198,7 @@ void Server::Start()
             }
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
-                LOG_INFO("%s", "deal_timer");
+//                LOG_INFO("%s", "deal_timer");
 //                std::cout << "deal_timer()" << std::endl;
                 //服务器端关闭连接，移除对应的定时器
                 util_timer *timer = users_timer[sockfd].timer;
@@ -206,22 +206,19 @@ void Server::Start()
             }
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) //处理信号
             {
-//                std::cout << "dealwithsignal()" << std::endl;
-                LOG_INFO("%s", "dealwithsignal");
+//                LOG_INFO("%s", "dealwithsignal");
                 bool flag = dealwithsignal(timeout, stop_server);
                 if (flag == false)
                     LOG_ERROR("%s", "dealclientdata failure");
             }
             else if (events[i].events & EPOLLIN)
             {
-//                std::cout << "dealwithread()" << std::endl;
-                LOG_INFO("%s", "dealwithread");
+//                LOG_INFO("%s", "dealwithread");
                 dealwithread(sockfd);
             }
             else if (events[i].events & EPOLLOUT)
             {
-//                std::cout << "dealwithwrite()" << std::endl;
-                LOG_INFO("%s", "dealwithwrite");
+//                LOG_INFO("%s", "dealwithwrite");
                 dealwithwrite(sockfd);
             }
         }
@@ -229,7 +226,7 @@ void Server::Start()
         if(timeout)
         {
             utils.timer_handler();
-            LOG_INFO("%s", "timer tick");
+//            LOG_INFO("%s", "timer tick");
             timeout = false;
         }
     }
@@ -326,7 +323,7 @@ bool Server::dealwithsignal(bool &timeout, bool &stop_server)
     }
     else
     {
-        for (int i = 0; i < ret; ++i)
+        for(int i = 0; i < ret; ++i)
         {
             switch (signals[i])
             {
@@ -419,11 +416,11 @@ void Server::dealwithwrite(int sockfd)
 
         m_pool->append(Users + sockfd, 1);
 
-        while (true)
+        while(true)
         {
-            if (1 == Users[sockfd].improv)
+            if(1 == Users[sockfd].improv)
             {
-                if (1 == Users[sockfd].timer_flag)
+                if(1 == Users[sockfd].timer_flag)
                 {
                     deal_timer(timer, sockfd);
                     Users[sockfd].timer_flag = 0;

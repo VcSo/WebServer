@@ -29,7 +29,7 @@ public:
     void trig_mode();
     void setsql();
     void event_listen();
-    void set_log(std::string path);
+    void set_log(const std::string path);
     void timer(int connfd, struct sockaddr_in client_addr);
     void adjust_timer(util_timer *timer);
     void deal_timer(util_timer *timer, int sockfd);
@@ -68,7 +68,6 @@ private:
 
     ConnSql *m_sql;
     Http *Users;
-//    std::shared_ptr<ThreadPool<Http>> m_pool;
     std::unique_ptr<ThreadPool<Http>> m_pool;
 //    ThreadPool<Http> *m_pool;
     Utils utils;
