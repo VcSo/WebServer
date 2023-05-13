@@ -27,10 +27,8 @@ char* setlogname(const std::string& log_path, char* logfile)
     return logfile;
 }
 
-Log::Log()
+Log::Log() : m_count(0), m_is_async(false)
 {
-    m_count = 0;
-    m_is_async = false;
 }
 
 Log::~Log()
@@ -52,7 +50,7 @@ Log *Log::get_instance()
     return &log;
 }
 
-bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size)
+bool Log::init(const std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size)
 {
     m_split_lines = split_line;
     m_close_log = uselog;
@@ -107,7 +105,7 @@ bool Log::init(std::string path, bool uselog, int log_buf_size, int split_line, 
     writelog.open(logfile, std::ios::binary);
     if(!writelog.is_open())
     {
-        std::cout << "create log error" << std::endl;
+//        std::cout << "create log error" << std::endl;
         return false;
     }
     writelog << "create log" << "\n";
@@ -130,8 +128,6 @@ void* Log::async_write_log()
         m_mutex.unlock();
     }
 }
-
-
 
 void Log::write_log(int level, const char *format, ...)
 {
@@ -169,7 +165,7 @@ void Log::write_log(int level, const char *format, ...)
     ++m_count;
     if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) //everyday log
     {
-        std::cout << m_count << std::endl;
+//        std::cout << m_count << std::endl;
 
         writelog.close();
         if(m_today != my_tm.tm_mday)
@@ -179,7 +175,7 @@ void Log::write_log(int level, const char *format, ...)
             struct tm my_tm = *tm_td;
             m_today = my_tm.tm_mday;
             file_num = 0;
-            std::cout << m_today << std::endl;
+//            std::cout << m_today << std::endl;
             char new_log[256] = {0};
             setlogname(log_path, new_log);
             writelog.open(new_log, std::ios::binary);

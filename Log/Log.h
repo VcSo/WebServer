@@ -20,7 +20,7 @@ public:
     static Log *get_instance();
     static void *flush_log_threaad(void *args);
 
-    bool init(std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size);
+    bool init(const std::string path, bool uselog, int log_buf_size, int split_line, int max_queue_size);
 
     void flush();
     void write_log(int level, const char *format, ...);
