@@ -24,10 +24,10 @@ int main(int argc, char **argv)
     std::string ip = "";
     int port = 20999;
     std::string sql_username = "root";
-    std::string sql_password = "Aa1248800211";
+    std::string sql_password = "";
     std::string sql_database = "serverm";
     bool use_log = true;
-    int lingermode = 1;
+    int lingermode = 0;
 
     /*
     et_init:
