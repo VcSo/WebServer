@@ -21,7 +21,6 @@ create table user(
 )ENGINE=InnoDB,default charset=utf8;
 
 insert into user(uid, username,password,create_time) values(1,'123','456',now());
-#insert into user(username,password,create_time) values('vv','456',now());
 ```
 
 ---
@@ -58,3 +57,10 @@ sh build.sh
 - t: threadnum, 
 - a: actor_mode, 0 = proactor, 1 = reactor,
 - c: async, log use async
+ 
+---
+
+## Siege压测
+
+- 1000并发，重复10次，环境入门云主机1核，多次测试结果在95%上下浮动
+- siege -c 1000 -r 10 -f url.txt(需要修改limit)
