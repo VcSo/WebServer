@@ -217,7 +217,7 @@ bool Http::write()
 
         bytes_have_send += temp;
         bytes_to_send -= temp;
-        if(bytes_have_send >= m_iv[0].iov_len) //iov_len减去writev之后的大小
+        if(bytes_have_send >= m_write_idx)
         {
             m_iv[0].iov_len = 0;
             //将文件中未发送的数据写入缓冲区
@@ -227,7 +227,8 @@ bool Http::write()
         else
         {
             m_iv[0].iov_base = m_write_buf + bytes_have_send;
-            m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
+//            m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
+            m_iv[0].iov_len = m_iv[0].iov_len - temp;
         }
 
         if(bytes_to_send <= 0)
@@ -278,8 +279,6 @@ Http::HTTP_CODE Http::process_read()
     {
         text = get_line();
         m_start_line = m_checked_idx;
-        LOG_INFO("TEXT: %s", text);
-//        std::cout << "TEXT = " << text << std::endl;
         switch (m_check_state)
         {
             case CHECK_STATE_REQUESTLINE: //解析请求行
@@ -328,7 +327,7 @@ bool Http::process_write(Http::HTTP_CODE ret)
                 return false;
             break;
         }
-        case BAD_REQUEST:
+        case NO_RESOURCE:
         {
             add_status_line(404, error_404_title);
             add_headers(strlen(error_404_form));
@@ -369,11 +368,8 @@ bool Http::process_write(Http::HTTP_CODE ret)
         default:
             return false;
     }
-    m_iv[0].iov_base = m_write_buf;
-    m_iv[0].iov_len = m_write_idx;
-    m_iv_count = 1;
-    bytes_to_send = m_write_idx;
-    return true;
+
+    return false;
 }
 
 Http::HTTP_CODE Http::parse_content(char *text)
@@ -635,11 +631,7 @@ Http::HTTP_CODE Http::do_request()
             //如果是注册，先检测数据库中是否有重名的
             //没有重名的，进行增加数据
             char *sql_insert = (char *)malloc(sizeof(char) * 200);
-//            if(users.empty() == true)
-//            {
-//                strcpy(sql_insert, "INSERT INTO user(username, password,create_time) VALUES(1,");
-//            }
-//            else
+
             {
                 strcpy(sql_insert, "INSERT INTO user(username, password,create_time) VALUES(");
             }
@@ -720,19 +712,19 @@ Http::HTTP_CODE Http::do_request()
 
     if(stat(m_real_file, &m_file_stat) < 0) //获取文件信息
     {
-        LOG_ERROR("%s: %s", m_real_file, "no_found");
+//        LOG_ERROR("%s: %s", m_real_file, "no_found");
         return NO_RESOURCE;
     }
 
     if(!(m_file_stat.st_mode & S_IROTH)) //文件可读
     {
-        LOG_ERROR("%s: %s", m_real_file, "cant_read");
+//        LOG_ERROR("%s: %s", m_real_file, "cant_read");
         return FORBIDDEN_REQUEST;
     }
 
     if(S_ISDIR(m_file_stat.st_mode)) //是目录不是文件
     {
-        LOG_ERROR("%s: %s", m_real_file, "is_dir");
+//        LOG_ERROR("%s: %s", m_real_file, "is_dir");
         return BAD_REQUEST;
     }
 
