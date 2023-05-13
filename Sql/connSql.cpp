@@ -1,7 +1,5 @@
 #include "connSql.h"
 
-#include <iostream>
-
 ConnSql * ConnSql::getinstance()
 {
     static ConnSql connsql;
@@ -111,7 +109,8 @@ void ConnSql::ReleaseConnection(MYSQL *con)
 {
     if (NULL == con)
     {
-        LOG_ERROR("release sqlconn error");
+        return;
+//        LOG_ERROR("release sqlconn error");
     }
 
     m_mutex.lock();
