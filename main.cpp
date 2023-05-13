@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     std::string sql_password = "";
     std::string sql_database = "serverm";
     bool use_log = true;
-    int lingermode = 0;
+    int lingermode = 1;
 
     /*
     et_init:
