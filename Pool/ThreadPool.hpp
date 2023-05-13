@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <queue>
+#include <list>
 
 #include "../Sql/connSql.h"
 #include "../Lock/Locker.h"
@@ -30,7 +31,8 @@ private:
 
     pthread_t *m_threads;
 
-    std::queue<T*> m_work_queue;
+//    std::queue<T*> m_work_queue;
+    std::list<T *> m_work_queue;
     Locker m_mutex;
     Sem m_sem;
     Cond m_cond;
@@ -73,16 +75,13 @@ template<typename T>
 ThreadPool<T>::~ThreadPool()
 {
     delete []m_threads;
-    for(int i = m_threadnum; i < m_threadnum + 1; --i)
-    {
-    }
-
 }
 
 template <typename T>
 void * ThreadPool<T>::worker(void *arg)
 {
-    ThreadPool *pool = static_cast<ThreadPool *>(arg);
+//    ThreadPool *pool = static_cast<ThreadPool *>(arg);
+    ThreadPool *pool = (ThreadPool *)arg;
     pool->run();
     return pool;
 }
@@ -101,14 +100,14 @@ void ThreadPool<T>::run()
         }
 
         T *request = m_work_queue.front();
-        m_work_queue.pop();
+        m_work_queue.pop_front();
         m_mutex.unlock();
         if(!request)
         {
             continue;
         }
 
-        if(m_actor == 1) //re
+        if(m_actor == 1) //reactor
         {
             if(request->m_state == 0)
             {
@@ -156,7 +155,7 @@ bool ThreadPool<T>::append(T *request, int state)
         return false;
     }
     request->m_state = state;
-    m_work_queue.push(request);
+    m_work_queue.push_back(request);
     m_mutex.unlock();
     m_sem.post();
     return true;
@@ -172,7 +171,7 @@ bool ThreadPool<T>::append_p(T *request)
         return false;
     }
 
-    m_work_queue.push(request);
+    m_work_queue.push_back(request);
     m_mutex.unlock();
     m_sem.post();
     return true;
