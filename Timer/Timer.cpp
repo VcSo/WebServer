@@ -2,6 +2,9 @@
 
 #include "../Http/Httpconn.h"
 
+int *Utils::u_pipefd = 0;
+int Utils::u_epollfd = 0;
+
 sort_timer_lst::sort_timer_lst() : head(nullptr), tail(nullptr)
 {
 }
@@ -184,6 +187,7 @@ void Utils::sig_handler(int sig)
 {
     //为保证函数的可重入性，保留原来的errno
     int save_errno = errno;
+    std::cout << sig << std::endl;
     int msg = sig;
     send(u_pipefd[1], (char *)&msg, 1, 0);
     errno = save_errno;
@@ -214,8 +218,6 @@ void Utils::show_error(int connfd, const char *info)
     close(connfd);
 }
 
-int *Utils::u_pipefd = 0;
-int Utils::u_epollfd = 0;
 
 class Utils;
 void cb_func(client_data *user_data)
