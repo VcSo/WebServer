@@ -14,6 +14,9 @@
 #include <netinet/tcp.h>
 #include <stdarg.h>
 #include <sys/stat.h>
+#include <fstream>
+#include <sstream>
+#include <unistd.h>
 
 #include "../Log/Log.h"
 #include "../Lock/Locker.h"
@@ -52,6 +55,7 @@ public:
         FORBIDDEN_REQUEST,
         FILE_REQUEST,
         INTERNAL_ERROR,
+        SUCCESS_JSON,
         CLOSED_CONNECTION
     };
     enum LINE_STATUS
@@ -128,6 +132,7 @@ private:
 
     bool m_close_log;
     bool m_linger;
+    bool m_write_json;
 
     //存储接收到的数据
     char m_read_buf[READ_BUFFER_SIZE];
@@ -145,6 +150,8 @@ private:
     std::string m_sql_username;
     std::string m_sql_password;
     std::string m_sql_database;
+    std::string m_filename;
+    std::string m_json;
 
     struct sockaddr_in m_addr;
     struct iovec m_iv[2];

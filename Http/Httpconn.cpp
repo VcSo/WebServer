@@ -105,6 +105,9 @@ void Http::init()
     m_state = 0;
     timer_flag = 0;
     improv = 0;
+    m_write_json = false;
+    m_filename = "";
+    m_json = "";
 
     memset(m_read_buf, '\0', READ_BUFFER_SIZE);
     memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
@@ -217,7 +220,14 @@ bool Http::write()
 
         bytes_have_send += temp;
         bytes_to_send -= temp;
-        if(bytes_have_send >= m_write_idx)
+        if(m_write_json)
+        {
+            m_iv[0].iov_len = 0;
+            //将文件中未发送的数据写入缓冲区
+            m_iv[1].iov_base = (char*)m_json.c_str() + (bytes_have_send - m_write_idx);
+            m_iv[1].iov_len = bytes_to_send;
+        }
+        else if(bytes_have_send >= m_write_idx)
         {
             m_iv[0].iov_len = 0;
             //将文件中未发送的数据写入缓冲区
@@ -236,7 +246,7 @@ bool Http::write()
             unmap();
             modfd(m_epollfd, m_sockfd, EPOLLIN, m_conn_mode);
 
-            if (m_linger)
+            if (m_linger && !m_write_json)
             {
                 init();
                 return true;
@@ -278,6 +288,7 @@ Http::HTTP_CODE Http::process_read()
     while((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || (line_status = parse_line()) == LINE_OK)
     {
         text = get_line();
+        std::cout << text << std::endl;
         m_start_line = m_checked_idx;
         switch (m_check_state)
         {
@@ -365,6 +376,25 @@ bool Http::process_write(Http::HTTP_CODE ret)
                     return false;
             }
         }
+        case SUCCESS_JSON:
+        {
+            add_status_line(200, ok_200_title);
+            m_json = "{\"code\": 200,\"success\": true,\"msg\": \"上传成功\",\"fileName\":\"./SaveFile/" + m_filename + "\"}";
+
+//            char buf[128];
+//            memset(buf, 0, sizeof(buf));
+//            int n = snprintf(buf, 128, "%s", str.c_str());
+            int str_len = m_json.length();
+            add_headers(str_len);
+            m_iv[0].iov_base = m_write_buf;
+            m_iv[0].iov_len = m_write_idx;
+            m_iv[1].iov_base = (char*)m_json.c_str();
+            m_iv[1].iov_len = str_len;
+            m_iv_count = 2;
+            bytes_to_send = m_write_idx + str_len;
+            m_write_json = true;
+            return true;
+        }
         default:
             return false;
     }
@@ -374,6 +404,7 @@ bool Http::process_write(Http::HTTP_CODE ret)
 
 Http::HTTP_CODE Http::parse_content(char *text)
 {
+//    std::cout << text << std::endl;
     if(m_read_idx >= (m_content_length + m_checked_idx))
     {
         text[m_content_length] = '\0';
@@ -387,6 +418,7 @@ Http::HTTP_CODE Http::parse_content(char *text)
 
 Http::HTTP_CODE Http::parse_headers(char *text)
 {
+//    std::cout << text << std::endl;
     if (text[0] == '\0')
     {
         if (m_content_length != 0)
@@ -416,6 +448,10 @@ Http::HTTP_CODE Http::parse_headers(char *text)
         text += 5;
         text += strspn(text, " \t");
         m_host = text;
+    }
+    else if (strncasecmp(text, "Content-Disposition:", 20) == 0)
+    {
+
     }
     else
     {
@@ -489,6 +525,15 @@ Http::HTTP_CODE Http::parse_request_line(char *text)
 Http::LINE_STATUS Http::parse_line()
 {
     char temp = '0';
+    if (m_check_state == CHECK_STATE_CONTENT) {
+        if (m_read_idx >= m_content_length + m_checked_idx) {
+            return LINE_OK;
+        }
+        else {
+            return LINE_OPEN;
+        }
+    }
+
     for(; m_checked_idx < m_read_idx; ++m_checked_idx)
     {
         temp = m_read_buf[m_checked_idx];
@@ -706,6 +751,44 @@ Http::HTTP_CODE Http::do_request()
         strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
 
         free(m_url_real);
+    }
+    else if(*(p + 1) == '8')
+    {
+        char *m_url_real = (char *)malloc(sizeof(char) * 1024);
+        strcpy(m_url_real, "/FileList.html");
+//        strcpy(m_url_real, "/upload.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+
+        free(m_url_real);
+    }
+    else if(*(p + 1) == 'u')
+    {
+        std::string str(m_string);
+        int start = str.find("filename=\"") + 10;
+        int end = str.find("\"", start);
+        m_filename = str.substr(start, end - start);
+
+        std::ofstream file("./SaveFile/" + m_filename);
+        std::istringstream ss(str);
+        std::string line;
+        for (int i = 0; i < 5; i++)
+            getline(ss, line);
+        if(file.is_open())
+        {
+            file << line;
+            file.close();
+        }
+        else
+        {
+            file.close();
+            return FORBIDDEN_REQUEST;
+        }
+
+        return SUCCESS_JSON;
+    }
+    else if(*(p + 1) == 'd')
+    {
+
     }
     else
         strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //拼接
