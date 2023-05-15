@@ -187,7 +187,7 @@ void Utils::sig_handler(int sig)
 {
     //为保证函数的可重入性，保留原来的errno
     int save_errno = errno;
-    std::cout << sig << std::endl;
+//    std::cout << sig << std::endl;
     int msg = sig;
     send(u_pipefd[1], (char *)&msg, 1, 0);
     errno = save_errno;
