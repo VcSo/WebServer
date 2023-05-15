@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     std::string ip = "";
     int port = 20999;
     std::string sql_username = "root";
-    std::string sql_password = "";
+    std::string sql_password = "Aa1248800211";
     std::string sql_database = "serverm";
     bool use_log = true;
     int lingermode = 1;
@@ -103,7 +103,8 @@ int main(int argc, char **argv)
     Server server(ip, port, "localhost", sql_username, sql_password, sql_database,
                   use_log, lingermode, et, sql_threadnum, thread_num, actor_mode, async); //日志 友善关闭 lt/et sql thread actor 异步
 
-    server.set_log("./Savelog/");
+    server.set_log("./SaveLog/");
+    server.set_savefile("./SaveFile");
     server.setsql();
     server.threadpool();
     server.trig_mode(); //触发模式
