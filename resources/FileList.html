@@ -1,0 +1,55 @@
+<!--html判断上传文件的大小，超过10mb禁止上传，上传文件通过指定接口发送post请求上传到服务器中，上传之后服务器返回成功json，上传的文件将文件名存在html中的展示列表中，并且点击文件名可以下载指定服务器存储目录中的文件，请给出html+js版本的代码-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>文件上传</title>
+</head>
+<body>
+<form id="uploadForm" enctype="multipart/form-data">
+  <input type="file" name="file" id="file" onchange="checkFileSize()">
+  <input type="button" value="上传" onclick="uploadFile()">
+</form>
+<div id="fileList"></div>
+<script>
+  function checkFileSize() {
+    var file = document.getElementById("file");
+    var fileSize = file.files[0].size;
+    if (fileSize > 10 * 1024 * 1024) {
+      alert("文件大小不能超过10MB");
+      file.value = "";
+    }
+  }
+
+  function uploadFile() {
+    var file = document.getElementById("file");
+    var formData = new FormData();
+    formData.append("file", file.files[0]);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "http://101.132.159.69:20999/u", true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+      if(xhr.readyState === 4 && xhr.status === 200){
+        alert('上传成功');
+        var jsonStr = xhr.responseText;//获取到服务端返回的数据
+        var response = JSON.parse(jsonStr);
+        if (response.success) {
+          var fileName = response.fileName;
+          var fileList = document.getElementById("fileList");
+          var a = document.createElement("a");
+          a.href = "." + fileName;
+          a.innerHTML = fileName + "<br>";
+          fileList.appendChild(a);
+        } else {
+          alert(response.message);
+        }
+      }
+      else if(xhr.status === 503){
+        alert("503, 上传出错")
+      }
+    };
+    xhr.send(formData);
+  }
+</script>
+</body>
+</html>
