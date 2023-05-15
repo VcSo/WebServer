@@ -53,6 +53,13 @@ void Server::set_log(const std::string path)
     }
 }
 
+void Server::set_savefile(const std::string filepath)
+{
+    if(access(filepath.c_str(), F_OK) == -1 ){// 文件夹不存在, https://www.cnblogs.com/whwywzhj/p/7801409.html
+        mkdir(filepath.c_str(), S_IRWXO|S_IRWXG|S_IRWXU);// https://www.jianshu.com/p/06a0da1f6389
+    }
+}
+
 void Server::setsql()
 {
     m_sql = ConnSql::getinstance();
@@ -437,6 +444,7 @@ void Server::dealwithwrite(int sockfd)
     }
     else
     {
+//        m_pool->append(Users + sockfd, 1);
         //proactor
         if (Users[sockfd].write())
         {

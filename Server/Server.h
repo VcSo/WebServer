@@ -30,6 +30,7 @@ public:
     void setsql();
     void event_listen();
     void set_log(const std::string path);
+    void set_savefile(const std::string file_path);
     void timer(int connfd, struct sockaddr_in client_addr);
     void adjust_timer(util_timer *timer);
     void deal_timer(util_timer *timer, int sockfd);
