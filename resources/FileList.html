@@ -6,6 +6,7 @@
   <title>文件上传</title>
 </head>
 <body>
+<div align=""><font size="5"> <strong>暂时仅支持小文件上传</strong></font></div>
 <form id="uploadForm" enctype="multipart/form-data">
   <input type="file" name="file" id="file" onchange="checkFileSize()">
   <input type="button" value="上传" onclick="uploadFile()">
@@ -15,7 +16,7 @@
   function checkFileSize() {
     var file = document.getElementById("file");
     var fileSize = file.files[0].size;
-    if (fileSize > 10 * 1024 * 1024) {
+    if (fileSize > 1 * 1024 * 1024) {
       alert("文件大小不能超过10MB");
       file.value = "";
     }
@@ -23,6 +24,11 @@
 
   function uploadFile() {
     var file = document.getElementById("file");
+    if(file.files.length === 0)
+    {
+      alert("请选择文件上传");
+      return false;
+    }
     var formData = new FormData();
     formData.append("file", file.files[0]);
     var xhr = new XMLHttpRequest();
@@ -37,15 +43,17 @@
           var fileName = response.fileName;
           var fileList = document.getElementById("fileList");
           var a = document.createElement("a");
-          a.href = "." + fileName;
+          a.href = "d/" + fileName;
           a.innerHTML = fileName + "<br>";
           fileList.appendChild(a);
         } else {
           alert(response.message);
+          return false;
         }
       }
       else if(xhr.status === 503){
         alert("503, 上传出错")
+        return false;
       }
     };
     xhr.send(formData);
