@@ -27,16 +27,8 @@ insert into user(uid, username,password,create_time) values(1,'123','456',now())
 
 ## build
 
-1. sh build.sh
+sh build.sh
 
-2.
-```
-mkdir build && cp -r ./resources/ ./build
-cd build
-cmake ..
-make -j4
-
-```
 ---
 
 ## Run
