@@ -154,7 +154,6 @@ bool Http::read_once()
     //LT读取数据
     if (0 == m_conn_mode)
     {
-        //int recv(SOCKET s, char *buf, int len, int flags);
         bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
         m_read_idx += bytes_read;
 
@@ -182,6 +181,7 @@ bool Http::read_once()
                 return false;
             }
             m_read_idx += bytes_read;
+
         }
         return true;
     }
@@ -288,7 +288,7 @@ Http::HTTP_CODE Http::process_read()
     while((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || (line_status = parse_line()) == LINE_OK)
     {
         text = get_line();
-        std::cout << text << std::endl;
+//        std::cout << text << std::endl;
         m_start_line = m_checked_idx;
         switch (m_check_state)
         {
@@ -379,7 +379,7 @@ bool Http::process_write(Http::HTTP_CODE ret)
         case SUCCESS_JSON:
         {
             add_status_line(200, ok_200_title);
-            m_json = "{\"code\": 200,\"success\": true,\"msg\": \"上传成功\",\"fileName\":\"./SaveFile/" + m_filename + "\"}";
+            m_json = "{\"code\": 200,\"success\": true,\"msg\": \"上传成功\",\"fileName\":\"" + m_filename + "\"}";
 
 //            char buf[128];
 //            memset(buf, 0, sizeof(buf));

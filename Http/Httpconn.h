@@ -26,7 +26,7 @@ class Http
 {
 public:
     static const int FILENAME_LEN = 200;
-    static const int READ_BUFFER_SIZE = 2048;
+    static const int READ_BUFFER_SIZE = 20480;
     static const int WRITE_BUFFER_SIZE = 1024;
     enum METHOD
     {
