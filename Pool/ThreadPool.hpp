@@ -139,14 +139,7 @@ void ThreadPool<T>::run()
         }
         else
         {
-            if(request->m_state == 1)
-            {
-                if(request->write())
-                {
-                    continue;
-                }
 
-            }
             connectionRAII mysqlcon(&request->mysql, m_sql);
             request->process();
         }
