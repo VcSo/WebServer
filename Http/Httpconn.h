@@ -26,7 +26,7 @@ class Http
 {
 public:
     static const int FILENAME_LEN = 200;
-    static const int READ_BUFFER_SIZE = 20480;
+    static const int READ_BUFFER_SIZE = 10000;
     static const int WRITE_BUFFER_SIZE = 1024;
     enum METHOD
     {
@@ -56,7 +56,8 @@ public:
         FILE_REQUEST,
         INTERNAL_ERROR,
         SUCCESS_JSON,
-        CLOSED_CONNECTION
+        CLOSED_CONNECTION,
+        DOWNLOAD_FILE
     };
     enum LINE_STATUS
     {
@@ -77,7 +78,7 @@ public:
     Http();
     ~Http();
 
-    void init(int connfd, struct sockaddr_in client_addr, char *root, int conn_mode, bool close_log,
+    void init(int connfd, struct sockaddr_in client_addr, char *root, char *down_dir, int conn_mode, bool close_log,
                             std::string sql_username, std::string sql_password, std::string sql_database);
     void init_mysqlresult(ConnSql *m_sql);
     void process();
@@ -85,6 +86,7 @@ public:
 
     bool read_once();
     bool write();
+    HTTP_CODE check_file_dir(const char *m_real_file, bool is_down);
 
     sockaddr_in * get_address();
 
@@ -139,8 +141,10 @@ private:
     //存储发出的响应报文数据
     char m_write_buf[WRITE_BUFFER_SIZE];
     char m_real_file[FILENAME_LEN];
+    char m_down_file[FILENAME_LEN];
 
     char *m_root;
+    char *m_down_dir;
     char *m_url;
     char *m_version;
     char *m_host;

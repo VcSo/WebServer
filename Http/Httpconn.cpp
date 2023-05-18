@@ -20,6 +20,7 @@ std::map<std::string, std::string> users;
 Http::Http() : m_close_log(true)
 {
 
+
 }
 
 Http::~Http()
@@ -67,12 +68,13 @@ void addfd(int epollfd, int sockfd, bool one_shot, int conn_mode)
     setnonblocking(sockfd);
 }
 
-void Http::init(int connfd, struct sockaddr_in client_addr, char *root, int conn_mode, bool close_log,
+void Http::init(int connfd, struct sockaddr_in client_addr, char *root, char *down_dir, int conn_mode, bool close_log,
                             std::string sql_username, std::string sql_password, std::string sql_database)
 {
     m_sockfd = connfd;
     m_addr = client_addr;
     m_root = root;
+    m_down_dir = down_dir;
     m_conn_mode = conn_mode;
     m_close_log = close_log;
     m_sql_username = sql_username;
@@ -112,6 +114,7 @@ void Http::init()
     memset(m_read_buf, '\0', READ_BUFFER_SIZE);
     memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
     memset(m_real_file, '\0', FILENAME_LEN);
+    memset(m_down_file, '\0', FILENAME_LEN);
 }
 
 void Http::init_mysqlresult(ConnSql *m_sql)
@@ -395,6 +398,17 @@ bool Http::process_write(Http::HTTP_CODE ret)
             m_write_json = true;
             return true;
         }
+        case DOWNLOAD_FILE:
+        {
+            add_status_line(200, ok_200_title);
+            m_iv[0].iov_base = m_write_buf;
+            m_iv[0].iov_len = m_write_idx;
+            m_iv[1].iov_base = m_file_address;
+            m_iv[1].iov_len = m_file_stat.st_size;
+            m_iv_count = 2;
+            bytes_to_send = m_write_idx + m_file_stat.st_size;
+            return true;
+        }
         default:
             return false;
     }
@@ -643,6 +657,7 @@ bool Http::add_content(const char *content)
 Http::HTTP_CODE Http::do_request()
 {
     strcpy(m_real_file, m_root);
+    strcpy(m_down_file, m_down_dir);
     int len = strlen(m_root);
 
     const char *p = strrchr(m_url, '/');
@@ -711,8 +726,7 @@ Http::HTTP_CODE Http::do_request()
                 strcpy(m_url, "/logError.html");
         }
     }
-
-    if(*(p + 1) == '0')
+    else if(*(p + 1) == '0')
     {
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/register.html");
@@ -786,34 +800,64 @@ Http::HTTP_CODE Http::do_request()
 
         return SUCCESS_JSON;
     }
-    else if(*(p + 1) == 'd')
-    {
-
-    }
     else
-        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //拼接
-
-    if(stat(m_real_file, &m_file_stat) < 0) //获取文件信息
     {
-//        LOG_ERROR("%s: %s", m_real_file, "no_found");
+        std::cout << "down" << std::endl;
+        const char needle[] = "/d/";
+        char *down;
+        int down_len = strlen(m_down_dir);
+
+        std::cout << m_url << std::endl;
+        down = strstr(m_url, needle);
+        if(*down == '/d/')
+        {
+            std::cout << "download" << std::endl;
+            const char *dn = strrchr(m_url, '/');
+            std::cout << *dn << std::endl;
+            char *m_url_real = (char *)malloc(sizeof(char) * 1024);
+            strcpy(m_url_real, dn + 1);
+//        strcpy(m_url_real, "/upload.html");
+            strncpy(m_down_file + down_len, m_url_real, strlen(m_url_real));
+
+            free(m_url_real);
+            return check_file_dir(m_down_file, true);
+        }
+        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //拼接
+    }
+
+    return check_file_dir(m_real_file, false);
+}
+
+Http::HTTP_CODE Http::check_file_dir(const char *m_file, bool is_down)
+{
+
+    if(stat(m_file, &m_file_stat) < 0) //获取文件信息
+    {
         return NO_RESOURCE;
     }
 
     if(!(m_file_stat.st_mode & S_IROTH)) //文件可读
     {
-//        LOG_ERROR("%s: %s", m_real_file, "cant_read");
         return FORBIDDEN_REQUEST;
     }
 
     if(S_ISDIR(m_file_stat.st_mode)) //是目录不是文件
     {
-//        LOG_ERROR("%s: %s", m_real_file, "is_dir");
+        if(is_down)
+        {
+            return NO_RESOURCE;
+        }
         return BAD_REQUEST;
     }
 
-    int fd = open(m_real_file, O_RDONLY);
+    int fd = open(m_file, O_RDONLY);
     m_file_address = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
     close(fd);
+    if(is_down)
+    {
+        return DOWNLOAD_FILE;
+    }
+
     return FILE_REQUEST;
 }
 
