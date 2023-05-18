@@ -14,6 +14,7 @@ Server::~Server() {
     delete []Users;
     delete []users_timer;
     free(m_root);
+    free(m_down);
 
 }
 
@@ -25,12 +26,21 @@ Server::Server(std::string ip, int port, std::string localhost, std::string sql_
 {
     Users = new Http[MAX_FD];
     users_timer = new client_data[MAX_FD];
+
     char server_path[256];
     getcwd(server_path, 256);
+
     char root[] = "/resources";
     m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
     strcat(m_root, root); //拼接
+    std::cout << m_root << std::endl;
+
+    char down_dir[] = "/SaveFile";
+    m_down = (char *)malloc(strlen(server_path) + strlen(down_dir) + 1);
+    strcpy(m_down, server_path);
+    strcat(m_down, down_dir); //拼接
+    std::cout << m_down << std::endl;
 
 }
 
@@ -293,7 +303,7 @@ bool Server::dealclientdata()
 
 void Server::timer(int connfd, struct sockaddr_in client_addr)
 {
-    Users[connfd].init(connfd, client_addr, m_root, m_conn_mode, m_close_log, m_sql_username, m_sql_password, m_sql_database);
+    Users[connfd].init(connfd, client_addr, m_root, m_down,m_conn_mode, m_close_log, m_sql_username, m_sql_password, m_sql_database);
 
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中

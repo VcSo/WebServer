@@ -48,6 +48,7 @@ private:
     std::string m_sql_database;
 
     char *m_root;
+    char *m_down;
 
     bool m_close_log;
 
