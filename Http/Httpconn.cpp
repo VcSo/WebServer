@@ -25,6 +25,11 @@ Http::Http() : m_close_log(true)
 
 Http::~Http()
 {
+    if(m_down_filename != nullptr)
+    {
+        delete[] m_down_filename;
+    }
+
 
 }
 
@@ -103,6 +108,7 @@ void Http::init()
     m_checked_idx = 0;
     m_read_idx = 0;
     m_write_idx = 0;
+    m_down_filename = nullptr;
     cgi = 0;
     m_state = 0;
     timer_flag = 0;
@@ -401,6 +407,7 @@ bool Http::process_write(Http::HTTP_CODE ret)
         case DOWNLOAD_FILE:
         {
             add_status_line(200, ok_200_title);
+            add_down_headers(m_file_stat.st_size);
             m_iv[0].iov_base = m_write_buf;
             m_iv[0].iov_len = m_write_idx;
             m_iv[1].iov_base = m_file_address;
@@ -617,6 +624,12 @@ bool Http::add_headers(int content_len)
            add_blank_line();
 }
 
+bool Http::add_down_headers(int content_len)
+{
+    return add_content_length(content_len) && add_linger() && add_type() && add_Disposition() &&
+           add_blank_line();
+}
+
 bool Http::add_content_length(int content_len)
 {
     return add_response("Content-Length:%d\r\n", content_len);
@@ -625,6 +638,16 @@ bool Http::add_content_length(int content_len)
 bool Http::add_linger()
 {
     return add_response("Connection:%s\r\n", (m_linger == true) ? "keep-alive" : "close");
+}
+
+bool Http::add_type()
+{
+    return add_response("Content-Type:%s\r\n", "application/octet-stream");
+}
+
+bool Http::add_Disposition()
+{
+    return add_response("Content-Disposition:%s%s\r\n", "attachment; filename=\"", m_down_filename);
 }
 
 bool Http::add_blank_line()
@@ -660,7 +683,7 @@ Http::HTTP_CODE Http::do_request()
     strcpy(m_down_file, m_down_dir);
     int len = strlen(m_root);
 
-    const char *p = strrchr(m_url, '/');
+    const char *p = strchr(m_url, '/');
 
     //处理cgi
     if (cgi == 1 && (*(p + 1) == '2' || *(p + 1) == '3'))
@@ -726,7 +749,8 @@ Http::HTTP_CODE Http::do_request()
                 strcpy(m_url, "/logError.html");
         }
     }
-    else if(*(p + 1) == '0')
+
+    if(*(p + 1) == '0')
     {
         char *m_url_real = (char *)malloc(sizeof(char) * 200);
         strcpy(m_url_real, "/register.html");
@@ -800,32 +824,43 @@ Http::HTTP_CODE Http::do_request()
 
         return SUCCESS_JSON;
     }
-    else
+    else if(*(p + 1) == 'd')
     {
         std::cout << "down" << std::endl;
-        const char needle[] = "/d/";
-        char *down;
-        int down_len = strlen(m_down_dir);
+        return download_file();
+    }
+    else
+    {
 
-        std::cout << m_url << std::endl;
-        down = strstr(m_url, needle);
-        if(*down == '/d/')
-        {
-            std::cout << "download" << std::endl;
-            const char *dn = strrchr(m_url, '/');
-            std::cout << *dn << std::endl;
-            char *m_url_real = (char *)malloc(sizeof(char) * 1024);
-            strcpy(m_url_real, dn + 1);
-//        strcpy(m_url_real, "/upload.html");
-            strncpy(m_down_file + down_len, m_url_real, strlen(m_url_real));
-
-            free(m_url_real);
-            return check_file_dir(m_down_file, true);
-        }
         strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //拼接
     }
 
     return check_file_dir(m_real_file, false);
+}
+
+Http::HTTP_CODE Http::download_file()
+{
+//    const char needle[] = "/d";
+    char *down;
+    int down_len = strlen(m_down_dir);
+
+    std::cout << m_url << std::endl;
+//    down = strstr(m_url, needle);
+//    if(*down == '/d')
+    {
+        std::cout << "download" << std::endl;
+        const char *dn = strrchr(m_url, '/');
+        char *m_url_real = (char *)malloc(sizeof(char) * 1024);
+        strcpy(m_url_real, dn);
+        m_down_filename = new char[64];
+        strcpy(m_down_filename, dn + 1);
+        strncpy(m_down_file + down_len, m_url_real, strlen(m_url_real));
+
+        free(m_url_real);
+        m_linger = true;
+        return check_file_dir(m_down_file, true);
+    }
+
 }
 
 Http::HTTP_CODE Http::check_file_dir(const char *m_file, bool is_down)

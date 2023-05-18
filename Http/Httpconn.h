@@ -27,7 +27,7 @@ class Http
 public:
     static const int FILENAME_LEN = 200;
     static const int READ_BUFFER_SIZE = 10000;
-    static const int WRITE_BUFFER_SIZE = 1024;
+    static const int WRITE_BUFFER_SIZE = 10000;
     enum METHOD
     {
         GET = 0,
@@ -87,6 +87,7 @@ public:
     bool read_once();
     bool write();
     HTTP_CODE check_file_dir(const char *m_real_file, bool is_down);
+    HTTP_CODE download_file();
 
     sockaddr_in * get_address();
 
@@ -101,7 +102,10 @@ private:
     bool add_content_length(int content_length);
     bool add_linger();
     bool add_blank_line();
+    bool add_type();
+    bool add_Disposition();
     bool add_content(const char *content);
+    bool add_down_headers(int content_length);
 
     LINE_STATUS parse_line();
     HTTP_CODE process_read();
@@ -150,6 +154,7 @@ private:
     char *m_host;
     char *m_file_address;
     char *m_string; //存储请求头数据
+    char *m_down_filename;
 
     std::string m_sql_username;
     std::string m_sql_password;
