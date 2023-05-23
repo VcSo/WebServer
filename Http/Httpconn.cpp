@@ -388,7 +388,7 @@ bool Http::process_write(Http::HTTP_CODE ret)
         case SUCCESS_JSON:
         {
             add_status_line(200, ok_200_title);
-            m_json = "{\"code\": 200,\"success\": true,\"msg\": \"上传成功\",\"fileName\":\"" + m_filename + "\"}";
+            m_json = "{\"code\": 200,\"success\": true,\"msg\": \"\\u4e0a\\u4f20\\u6210\\u529f\",\"fileName\":\"" + m_filename + "\"}";
 
 //            char buf[128];
 //            memset(buf, 0, sizeof(buf));
@@ -826,7 +826,6 @@ Http::HTTP_CODE Http::do_request()
     }
     else if(*(p + 1) == 'd')
     {
-        std::cout << "down" << std::endl;
         return download_file();
     }
     else
@@ -840,27 +839,19 @@ Http::HTTP_CODE Http::do_request()
 
 Http::HTTP_CODE Http::download_file()
 {
-//    const char needle[] = "/d";
     char *down;
     int down_len = strlen(m_down_dir);
 
-    std::cout << m_url << std::endl;
-//    down = strstr(m_url, needle);
-//    if(*down == '/d')
-    {
-        std::cout << "download" << std::endl;
-        const char *dn = strrchr(m_url, '/');
-        char *m_url_real = (char *)malloc(sizeof(char) * 1024);
-        strcpy(m_url_real, dn);
-        m_down_filename = new char[64];
-        strcpy(m_down_filename, dn + 1);
-        strncpy(m_down_file + down_len, m_url_real, strlen(m_url_real));
+    const char *dn = strrchr(m_url, '/');
+    char *m_url_real = (char *)malloc(sizeof(char) * 1024);
+    strcpy(m_url_real, dn);
+    m_down_filename = new char[64];
+    strcpy(m_down_filename, dn + 1);
+    strncpy(m_down_file + down_len, m_url_real, strlen(m_url_real));
 
-        free(m_url_real);
-        m_linger = true;
-        return check_file_dir(m_down_file, true);
-    }
-
+    free(m_url_real);
+    m_linger = true;
+    return check_file_dir(m_down_file, true);
 }
 
 Http::HTTP_CODE Http::check_file_dir(const char *m_file, bool is_down)

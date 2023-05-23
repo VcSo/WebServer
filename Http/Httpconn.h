@@ -55,8 +55,8 @@ public:
         FORBIDDEN_REQUEST,
         FILE_REQUEST,
         INTERNAL_ERROR,
-        SUCCESS_JSON,
         CLOSED_CONNECTION,
+        SUCCESS_JSON,
         DOWNLOAD_FILE
     };
     enum LINE_STATUS
