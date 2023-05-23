@@ -5,11 +5,11 @@
 int *Utils::u_pipefd = 0;
 int Utils::u_epollfd = 0;
 
-sort_timer_lst::sort_timer_lst() : head(nullptr), tail(nullptr)
+sort_timer_list::sort_timer_list() : head(nullptr), tail(nullptr)
 {
 }
 
-sort_timer_lst::~sort_timer_lst()
+sort_timer_list::~sort_timer_list()
 {
     util_timer *tmp = head;
     while (tmp)
@@ -20,7 +20,7 @@ sort_timer_lst::~sort_timer_lst()
     }
 }
 
-void sort_timer_lst::add_timer(util_timer *timer)
+void sort_timer_list::add_timer(util_timer *timer)
 {
     if (!timer)
     {
@@ -42,7 +42,7 @@ void sort_timer_lst::add_timer(util_timer *timer)
 }
 
 //某个定时任务发生变化时,调整对应的定时器在链表中的位置。这个函数只考虑被调整的定时器的超时时间延长的情况，即该定时器需要往链表的尾部移动
-void sort_timer_lst::adjust_timer(util_timer *timer)
+void sort_timer_list::adjust_timer(util_timer *timer)
 {
     if (!timer)
     {
@@ -67,7 +67,7 @@ void sort_timer_lst::adjust_timer(util_timer *timer)
         add_timer(timer, timer->next);
     }
 }
-void sort_timer_lst::del_timer(util_timer *timer)
+void sort_timer_list::del_timer(util_timer *timer)
 {
     if (!timer)
     {
@@ -99,7 +99,7 @@ void sort_timer_lst::del_timer(util_timer *timer)
     delete timer;
 }
 
-void sort_timer_lst::tick()
+void sort_timer_list::tick()
 {
     if (!head)
     {
@@ -114,7 +114,7 @@ void sort_timer_lst::tick()
         {
             break;
         }
-        tmp->cb_func(tmp->user_data);
+        tmp->cb_func(tmp->user_data); //epoll_del ,close fd
         head = tmp->next;
         if (head)
         {
@@ -125,7 +125,7 @@ void sort_timer_lst::tick()
     }
 }
 
-void sort_timer_lst::add_timer(util_timer *timer, util_timer *lst_head)
+void sort_timer_list::add_timer(util_timer *timer, util_timer *lst_head)
 {
     util_timer *prev = lst_head;
     util_timer *tmp = prev->next;
@@ -177,7 +177,7 @@ void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode)
         event.events = EPOLLIN | EPOLLRDHUP;
 
     if (one_shot)
-        event.events |= EPOLLONESHOT;
+        event.events |= EPOLLONESHOT; //事件只触发一次
     epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
     setnonblocking(fd);
 }
@@ -187,7 +187,6 @@ void Utils::sig_handler(int sig)
 {
     //为保证函数的可重入性，保留原来的errno
     int save_errno = errno;
-//    std::cout << sig << std::endl;
     int msg = sig;
     send(u_pipefd[1], (char *)&msg, 1, 0);
     errno = save_errno;
@@ -208,7 +207,7 @@ void Utils::addsig(int sig, void(*handler)(int), bool restart)
 //定时处理任务，重新定时以不断触发SIGALRM信号
 void Utils::timer_handler()
 {
-    m_timer_lst.tick();
+    m_timer_list.tick();
     alarm(m_TIMESLOT);
 }
 

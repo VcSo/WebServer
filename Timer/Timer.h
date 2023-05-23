@@ -47,11 +47,11 @@ public:
     util_timer *next;
 };
 
-class sort_timer_lst
+class sort_timer_list
 {
 public:
-    sort_timer_lst();
-    ~sort_timer_lst();
+    sort_timer_list();
+    ~sort_timer_list();
 
     void add_timer(util_timer *timer);
     void adjust_timer(util_timer *timer);
@@ -92,7 +92,7 @@ public:
 
 public:
     static int *u_pipefd;
-    sort_timer_lst m_timer_lst;
+    sort_timer_list m_timer_list;
     static int u_epollfd;
     int m_TIMESLOT;
 };
