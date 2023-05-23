@@ -34,13 +34,11 @@ Server::Server(std::string ip, int port, std::string localhost, std::string sql_
     m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
     strcat(m_root, root); //拼接
-    std::cout << m_root << std::endl;
 
     char down_dir[] = "/SaveFile";
     m_down = (char *)malloc(strlen(server_path) + strlen(down_dir) + 1);
     strcpy(m_down, server_path);
     strcat(m_down, down_dir); //拼接
-    std::cout << m_down << std::endl;
 
 }
 
@@ -82,7 +80,6 @@ void Server::setsql()
 void Server::threadpool()
 {
 //    m_pool = new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum);
-//    m_pool = std::make_shared<ThreadPool<Http>>(m_actor_mode, m_sql, m_threadnum);
     m_pool = std::unique_ptr<ThreadPool<Http>>(new ThreadPool<Http>(m_actor_mode, m_sql, m_threadnum)); //独占
     std::cout << "ThreadPool init" << std::endl;
     LOG_INFO("ThreadPool created")
@@ -148,10 +145,10 @@ void Server::event_listen()
         LOG_ERROR("setsockopt SO_REUSEADDR error");
     }
     //https://www.zhihu.com/question/42308970/answer/246334766
-//    if(setsockopt(m_listenfd, IPPROTO_TCP, TCP_NODELAY, (char*)&reuse, int(sizeof(int))) == -1)
-//    {
-//        LOG_ERROR("setsockopt TCP_NODELAY error");
-//    }
+    if(setsockopt(m_listenfd, IPPROTO_TCP, TCP_NODELAY, (char*)&reuse, int(sizeof(int))) == -1)
+    {
+        LOG_ERROR("setsockopt TCP_NODELAY error");
+    }
 
     ret = bind(m_listenfd, (struct sockaddr*) &address, sizeof(address));
     assert(ret >= 0);
@@ -218,7 +215,7 @@ void Server::Start()
                     continue;
                 }
             }
-            else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
+            else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) //异常事件处理，关闭连接，移除定时器
             {
 //                LOG_INFO("%s", "deal_timer");
 //                std::cout << "deal_timer()" << std::endl;
@@ -315,7 +312,7 @@ void Server::timer(int connfd, struct sockaddr_in client_addr)
     time_t cur = time(NULL);
     timer->expire = cur + 3 * TIMESLOT;
     users_timer[connfd].timer = timer;
-    utils.m_timer_lst.add_timer(timer);
+    utils.m_timer_list.add_timer(timer);
 }
 
 void Server::deal_timer(util_timer *timer, int sockfd)
@@ -323,7 +320,7 @@ void Server::deal_timer(util_timer *timer, int sockfd)
     timer->cb_func(&users_timer[sockfd]);
     if(timer)
     {
-        utils.m_timer_lst.del_timer(timer);
+        utils.m_timer_list.del_timer(timer);
     }
 
     LOG_INFO("close fd %d", users_timer[sockfd].sockfd);
@@ -349,12 +346,12 @@ bool Server::dealwithsignal(bool &timeout, bool &stop_server)
         {
             switch (signals[i])
             {
-                case SIGALRM:
+                case SIGALRM: //时种定时 errno 14
                 {
                     timeout = true;
                     break;
                 }
-                case SIGTERM:
+                case SIGTERM: //程序结束运行
                 {
                     stop_server = true;
                     break;
@@ -420,7 +417,7 @@ void Server::adjust_timer(util_timer *timer)
 {
     time_t cur = time(NULL);
     timer->expire = cur + 3 + TIMESLOT;
-    utils.m_timer_lst.adjust_timer(timer);
+    utils.m_timer_list.adjust_timer(timer);
 
     LOG_INFO("%s", "adjust timer once");
 }
