@@ -26,3 +26,5 @@ int main(int argc, char **argv) {
 }
 //
 // g++ -W -Wall -g json.cpp -o json -lPocoNet -lPocoUtil -lPocoJSON -lPocoFoundation -I /usr/local/include/Poco -I /usr/local/lib
+
+//clang++ -std=c++14 -W -Wall -g json.cpp -o json -lPocoNet -lPocoUtil -lPocoJSON -lPocoFoundation -I /usr/local/include/ -I /usr/local/lib
