@@ -3,8 +3,8 @@
 ![server](https://img.shields.io/github/actions/workflow/status/VcSpace/WebServer/c-cpp.yml?branch=main)
 
 - 使用 c++编写的 Webserver， 项目使用线程池，Epoll，Reactor/Proactor模式，同步/异步写日志， 
-- 支持解析HTTP GET/POST 请求，实现Web端查看网页，图片，视频，
-- 连接 mysql，实现了用户注册与登陆功能 。
+- 支持解析HTTP GET/POST 请求，实现Web端查看网页，图片，视频，文件上传/下载，
+- 使用mysql，用于用户注册与登陆功能 。
 
 ---
 
