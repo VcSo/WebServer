@@ -18,6 +18,7 @@ const int TIMESLOT = 5;             //最小超时单位
 
 class Server {
 public:
+    enum { MAX = 1024 };
     Server();
     ~Server();
 
