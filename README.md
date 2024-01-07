@@ -58,7 +58,7 @@ sh build.sh
 
 ## Siege压测
 
-- 1000并发，重复10次，入门云主机1核2GB，多次测试结果在95%上下浮动
+- 10000并发，重复10次，入门云主机1核2GB，多次测试结果在95%上下浮动
 - siege -c 1000 -r 10 -f url.txt(需修改limit)
 ```
 Transactions:                   2415 hits
